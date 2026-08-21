@@ -16,9 +16,9 @@ const Navbar = () => {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200"
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
+      className="fixed top-6 left-1/2 z-50 w-[95%] max-w-7xl -translate-x-1/2" >
+        
+      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-8 py-4 backdrop-blur-2xl">
 
         {/* Logo */}
 
@@ -26,7 +26,7 @@ const Navbar = () => {
           to="/"
           className="flex items-center gap-3"
         >
-          <div className="w-11 h-11 rounded-2xl bg-[#2E8B7E] flex items-center justify-center shadow-lg">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10">
 
             <GraduationCap
               className="text-white"
@@ -37,14 +37,12 @@ const Navbar = () => {
 
           <div>
 
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               CampusOS
-
             </h1>
 
-            <p className="text-xs text-gray-500">
-
+            <p className="text-xs text-zinc-400">
+              
               Smart Campus Platform
 
             </p>
@@ -55,13 +53,13 @@ const Navbar = () => {
 
         {/* Navigation */}
 
-        <div className="hidden lg:flex items-center gap-10 text-gray-600 font-medium">
+        <div className="hidden lg:flex items-center gap-2">
 
           {navLinks.map((item) => (
             <a
               key={item.name}
               href={item.href}
-              className="hover:text-[#2E8B7E] transition-all duration-300"
+              className="rounded-xl px-4 py-2 text-zinc-300 transition-all duration-300 hover:bg-white/10 hover:text-white"
             >
               {item.name}
             </a>
@@ -73,26 +71,25 @@ const Navbar = () => {
 
         <div className="flex items-center gap-4">
 
-          <Link
-            to="/login"
-            className={`px-5 py-2 rounded-xl transition-all duration-300
-            ${
-              location.pathname === "/login"
-                ? "bg-[#2E8B7E] text-white"
-                : "border border-gray-300 hover:border-[#2E8B7E] hover:text-[#2E8B7E]"
-            }`}
-          >
-            Login
-          </Link>
+  <Link
+    to="/login"
+    className={`rounded-xl px-5 py-2.5 font-medium transition-all duration-300 ${
+      location.pathname === "/login"
+        ? "bg-white text-black"
+        : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
+    }`}
+  >
+    Login
+  </Link>
 
-          <Link
-            to="/signup"
-            className="px-5 py-2 rounded-xl bg-[#2E8B7E] text-white hover:bg-[#256F65] transition-all duration-300 shadow-md hover:shadow-xl"
-          >
-            Sign Up
-          </Link>
+  <Link
+    to="/signup"
+    className="rounded-xl bg-white px-5 py-2.5 font-medium text-black transition-all duration-300 hover:bg-neutral-200 active:scale-95"
+  >
+    Sign Up
+  </Link>
 
-        </div>
+</div>
 
       </div>
     </motion.nav>

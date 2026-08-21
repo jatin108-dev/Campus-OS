@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "axios";
 import {
   GraduationCap,
   Store,
@@ -12,6 +13,37 @@ import {
 const LoginForm = () => {
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
+
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+const handleLogin = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/api/auth/login",
+      {
+        loginId,
+        password,
+        role,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+    setMessage(response.data.message);
+    console.log(response.data);
+  } catch (error) {
+    console.log(error.response?.data);
+
+    setMessage(
+      error.response?.data?.message || "Login failed"
+    );
+  }
+};
 
   return (
     <motion.div
@@ -35,6 +67,7 @@ const LoginForm = () => {
       <div className="flex mt-8 bg-gray-100 rounded-2xl p-1">
 
         <button
+          type="button"
           onClick={() => setRole("student")}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition
             ${
@@ -48,6 +81,7 @@ const LoginForm = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setRole("vendor")}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition
             ${
@@ -64,7 +98,7 @@ const LoginForm = () => {
 
       {/* Form */}
 
-      <form className="mt-8 space-y-5">
+      <form onSubmit={handleLogin} className="mt-8 space-y-5">
 
         <div>
           <label className="text-sm font-medium text-gray-700">
@@ -75,6 +109,8 @@ const LoginForm = () => {
 
           <input
             type="text"
+            value={loginId}
+            onChange={(e) => setLoginId(e.target.value)}   
             placeholder={
               role === "student"
                 ? "Enter Enrollment Number"
@@ -93,6 +129,8 @@ const LoginForm = () => {
 
             <input
               type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter Password"
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2E8B7E]"
             />
@@ -111,6 +149,12 @@ const LoginForm = () => {
 
           </div>
         </div>
+
+            {message && (
+             <p className="text-center text-sm text-gray-600 mt-4">
+              {message}
+             </p>
+         )}
 
         <button
           type="submit"

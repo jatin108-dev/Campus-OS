@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "axios";
 import {
   GraduationCap,
   Store,
@@ -12,10 +13,55 @@ import {
   UserPlus,
 } from "lucide-react";
 
+
 const SignupForm = () => {
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [enrollmentNumber, setEnrollmentNumber] = useState("");
+  const [vendorId, setVendorId] = useState("");
+
+  const handleSignup = async (e) => {
+  e.preventDefault();
+
+  if (password !== confirmPassword) {
+    setMessage("Passwords do not match");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/api/auth/register",
+      {
+        fullName,
+        email,
+        password,
+        role,
+        enrollmentNumber,
+        vendorId,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+    setMessage(response.data.message);
+
+    console.log(response.data);
+  } catch (error) {
+    console.log(error.response?.data);
+
+    setMessage(
+      error.response?.data?.message || "Registration failed"
+    );
+  }
+};
 
   return (
     <motion.div
@@ -68,7 +114,7 @@ const SignupForm = () => {
 
       {/* Form */}
 
-      <form className="mt-8 space-y-5">
+      <form onSubmit={handleSignup} className="mt-8 space-y-5">
 
         {/* Name */}
 
@@ -87,6 +133,8 @@ const SignupForm = () => {
 
             <input
               type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               placeholder="Enter your full name"
               className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#2E8B7E] focus:outline-none"
             />
@@ -112,6 +160,8 @@ const SignupForm = () => {
 
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#2E8B7E] focus:outline-none"
             />
@@ -131,14 +181,22 @@ const SignupForm = () => {
           </label>
 
           <input
-            type="text"
-            placeholder={
-              role === "student"
-                ? "Enter Enrollment Number"
-                : "Enter Vendor ID"
-            }
-            className="w-full mt-2 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#2E8B7E] focus:outline-none"
-          />
+  type="text"
+  value={role === "student" ? enrollmentNumber : vendorId}
+  onChange={(e) => {
+    if (role === "student") {
+      setEnrollmentNumber(e.target.value);
+    } else {
+      setVendorId(e.target.value);
+    }
+  }}
+  placeholder={
+    role === "student"
+      ? "Enter Enrollment Number"
+      : "Enter Vendor ID"
+  }
+  className="w-full mt-2 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#2E8B7E] focus:outline-none"
+/>
 
         </div>
 
@@ -158,6 +216,8 @@ const SignupForm = () => {
             />
 
             <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               type={showPassword ? "text" : "password"}
               placeholder="Create Password"
               className="w-full pl-11 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#2E8B7E] focus:outline-none"
@@ -191,6 +251,8 @@ const SignupForm = () => {
             />
 
             <input
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               type={showConfirm ? "text" : "password"}
               placeholder="Confirm Password"
               className="w-full pl-11 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#2E8B7E] focus:outline-none"
@@ -218,6 +280,12 @@ const SignupForm = () => {
           Create Account
         </button>
 
+        {message && (
+        <p className="text-center text-sm text-gray-600 mt-4">
+           {message}
+        </p>
+     )}
+
       </form>
 
       {/* Bottom */}
@@ -226,8 +294,7 @@ const SignupForm = () => {
         Already have an account?{" "}
         <Link
           to="/login"
-          className="text-[#2E8B7E] font-semibold"
-        >
+          className="text-[#2E8B7E] font-semibold">
           Login
         </Link>
       </p>
