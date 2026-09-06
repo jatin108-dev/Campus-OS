@@ -1,31 +1,54 @@
-const FeaturedCard = ({ icon, title, description, comingSoon }) => {
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+
+const FeatureCard = ({ icon: Icon, title, description, comingSoon = false }) => {
   return (
-    <div className="relative rounded-3xl border border-white/10 bg-[#111418] p-8 hover:border-emerald-500/30 transition">
+    <motion.div
+      whileHover={{
+        y: -10,
+        scale: 1.03,
+      }}
+      transition={{ duration: 0.3 }}
+      className="group relative bg-white rounded-3xl p-8 border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300"
+    >
+      {/* Icon */}
+
+      <div className="w-16 h-16 rounded-2xl bg-[#D7F5E8] flex items-center justify-center text-[#2E8B7E] group-hover:scale-110 transition">
+
+        <Icon size={30} />
+
+      </div>
+
+      {/* Badge */}
 
       {comingSoon && (
-        <span className="absolute top-6 right-6 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm">
+        <span className="absolute top-6 right-6 bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
           Coming Soon
         </span>
       )}
 
-      <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-3xl">
-        {icon}
-      </div>
+      {/* Title */}
 
-      <h3 className="mt-8 text-2xl font-bold text-white">
+      <h3 className="mt-6 text-2xl font-bold text-gray-900">
         {title}
       </h3>
 
-      <p className="mt-5 text-slate-400 leading-8">
+      {/* Description */}
+
+      <p className="mt-4 text-gray-600 leading-7">
         {description}
       </p>
 
-      <button className="mt-8 text-emerald-400 font-semibold">
-        Learn More →
-      </button>
+      {/* Learn More */}
 
-    </div>
+      <button className="mt-8 flex items-center gap-2 text-[#2E8B7E] font-semibold hover:gap-3 transition-all">
+        Learn More
+
+        <ArrowRight size={18} />
+
+      </button>
+    </motion.div>
   );
 };
 
-export default FeaturedCard;
+export default FeatureCard;
