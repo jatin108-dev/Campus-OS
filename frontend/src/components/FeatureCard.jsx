@@ -1,54 +1,152 @@
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  Utensils,
+  LibraryBig,
+  MapPinned,
+} from "lucide-react";
 
-const FeatureCard = ({ icon: Icon, title, description, comingSoon = false }) => {
+const Features = () => {
   return (
-    <motion.div
-      whileHover={{
-        y: -10,
-        scale: 1.03,
-      }}
-      transition={{ duration: 0.3 }}
-      className="group relative bg-white rounded-3xl p-8 border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300"
+    <section
+      id="features"
+      className="relative bg-[#0b0c10] text-white py-24 overflow-hidden"
     >
-      {/* Icon */}
-
-      <div className="w-16 h-16 rounded-2xl bg-[#D7F5E8] flex items-center justify-center text-[#2E8B7E] group-hover:scale-110 transition">
-
-        <Icon size={30} />
-
+      {/* Background grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.06]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
+            backgroundSize: "90px 90px",
+          }}
+        />
       </div>
 
-      {/* Badge */}
+      {/* Glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/5 blur-[130px] rounded-full pointer-events-none" />
 
-      {comingSoon && (
-        <span className="absolute top-6 right-6 bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
-          Coming Soon
-        </span>
-      )}
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-10">
 
-      {/* Title */}
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto">
 
-      <h3 className="mt-6 text-2xl font-bold text-gray-900">
-        {title}
-      </h3>
+          <span className="inline-flex items-center px-5 py-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 text-emerald-400 font-medium">
+            Features
+          </span>
 
-      {/* Description */}
+          <h2 className="mt-7 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
+            Everything You Need
+          </h2>
 
-      <p className="mt-4 text-gray-600 leading-7">
-        {description}
-      </p>
+          <p className="mt-6 text-lg sm:text-xl leading-8 text-blue-200/65">
+            CampusOS combines essential campus services into one
+            intelligent platform, making student life easier,
+            faster, and more connected.
+          </p>
+        </div>
 
-      {/* Learn More */}
+        {/* Feature Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
 
-      <button className="mt-8 flex items-center gap-2 text-[#2E8B7E] font-semibold hover:gap-3 transition-all">
-        Learn More
+          {/* ================= CANTEEN ================= */}
+          <div className="group relative rounded-3xl border border-white/10 bg-[#15161b] p-8 hover:border-emerald-400/30 transition duration-300">
 
-        <ArrowRight size={18} />
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-emerald-400/10 border border-emerald-400/10 flex items-center justify-center">
+              <Utensils
+                size={28}
+                className="text-emerald-400"
+              />
+            </div>
 
-      </button>
-    </motion.div>
+            <h3 className="text-2xl font-bold mt-8">
+              Smart Canteen
+            </h3>
+
+            <p className="mt-4 text-gray-400 leading-8">
+              Browse menus from all campus canteens, place
+              orders online, and skip long queues with a
+              seamless ordering experience.
+            </p>
+
+            <a
+              href="#"
+              className="inline-flex items-center gap-2 mt-8 text-emerald-400 font-semibold group-hover:gap-3 transition-all"
+            >
+              Learn More
+              <ArrowRight size={18} />
+            </a>
+          </div>
+
+          {/* ================= LIBRARY ================= */}
+          <div className="group relative rounded-3xl border border-white/10 bg-[#15161b] p-8 hover:border-emerald-400/30 transition duration-300">
+
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-emerald-400/10 border border-emerald-400/10 flex items-center justify-center">
+              <LibraryBig
+                size={28}
+                className="text-emerald-400"
+              />
+            </div>
+
+            <h3 className="text-2xl font-bold mt-8">
+              Digital Library
+            </h3>
+
+            <p className="mt-4 text-gray-400 leading-8">
+              Search books, reserve copies, track due dates,
+              and manage all your library activities digitally.
+            </p>
+
+            <a
+              href="#"
+              className="inline-flex items-center gap-2 mt-8 text-emerald-400 font-semibold group-hover:gap-3 transition-all"
+            >
+              Learn More
+              <ArrowRight size={18} />
+            </a>
+          </div>
+
+          {/* ================= NAVIGATION ================= */}
+          <div className="group relative rounded-3xl border border-white/10 bg-[#15161b] p-8 hover:border-emerald-400/30 transition duration-300">
+
+            {/* Coming Soon */}
+            <span className="absolute top-6 right-6 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-xs font-semibold">
+              Coming Soon
+            </span>
+
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-emerald-400/10 border border-emerald-400/10 flex items-center justify-center">
+              <MapPinned
+                size={28}
+                className="text-emerald-400"
+              />
+            </div>
+
+            <h3 className="text-2xl font-bold mt-8">
+              Campus Navigation
+            </h3>
+
+            <p className="mt-4 text-gray-400 leading-8">
+              Navigate classrooms, labs, auditoriums and
+              campus facilities effortlessly using indoor
+              navigation.
+            </p>
+
+            <a
+              href="#"
+              className="inline-flex items-center gap-2 mt-8 text-emerald-400 font-semibold group-hover:gap-3 transition-all"
+            >
+              Learn More
+              <ArrowRight size={18} />
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
   );
 };
 
-export default FeatureCard;
+export default Features;
