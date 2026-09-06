@@ -4,75 +4,79 @@ import LoginForm from "../components/LoginForm";
 
 const Login = () => {
   return (
-    <div className="relative min-h-screen bg-[#F8FAF8] overflow-hidden">
+    <div className="relative min-h-screen bg-[#080b0d] text-white overflow-hidden">
 
-      {/* Background Blur Effects */}
-      <div className="absolute -top-24 -left-24 w-80 h-80 bg-emerald-200/40 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-100/40 rounded-full blur-3xl"></div>
+      {/* Background Glow */}
+      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl" />
+
+      <div className="absolute bottom-[-200px] right-[-150px] w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-3xl" />
 
       {/* Back Button */}
-      <div className="absolute top-8 left-8">
-        <Link to="/" className="flex items-center gap-2 text-gray-600 hover:text-[#2E8B7E] transition">
-          <ArrowLeft size={20} />
-          Back to Home
-        </Link>
+      <Link
+        to="/"
+        className="absolute top-2 left-10 z-20 flex items-center gap-3 text-gray-400 hover:text-white transition"
+      >
+        <ArrowLeft size={20} />
+        Back to Home
+      </Link>
 
-      </div>
+      {/* Main */}
+      <div className="relative min-h-screen max-w-7xl mx-auto px-8 lg:px-12 grid lg:grid-cols-2 gap-16 items-center">
 
-      {/* Main Content */}
-      <div className="relative flex items-center justify-center min-h-screen px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl w-full">
+        {/* LEFT SIDE */}
+        <div className="hidden lg:block">
 
-          {/* Left Side */}
-          <div className="hidden mt-7 lg:block">
-            <span className="bg-[#D7F5E8] text-[#2E8B7E] px-4 py-2  rounded-full font-medium">
-              CampusOS
-            </span>
+          {/* Badge */}
+          <span className="inline-block px-5 py-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 text-emerald-400 font-medium">
+            CampusOS
+          </span>
 
-            <h1 className="mt-8 text-6xl font-bold leading-tight text-gray-900">
-              Welcome
-              <br />
-              Back.
-            </h1>
+          {/* Heading */}
+          <h1 className="mt-8 text-7xl xl:text-8xl font-bold leading-[0.95] tracking-tight">
+            Welcome
+            <br />
+            Back<span className="text-emerald-400">.</span>
+          </h1>
 
-            <p className="mt-6 text-lg text-gray-600 leading-8 max-w-lg">
-              Login to continue accessing your canteen orders, library records, announcements and other campus
-              services from one centralized platform.
-            </p>
+          {/* Description */}
+          <p className="mt-8 max-w-xl text-lg xl:text-xl leading-8 text-gray-400">
+            Login to continue accessing your canteen orders,
+            library records, announcements and other campus
+            services from one centralized platform.
+          </p>
 
-            <div className="mt-10 space-y-4">
+          {/* Features */}
+          <div className="mt-10 space-y-6">
 
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#2E8B7E]"></div>
-
-                <span className="text-gray-700">
-                  Smart Canteen Ordering
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#2E8B7E]"></div>
-
-                <span className="text-gray-700">
-                  Digital Library
-                </span>
-
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#2E8B7E]"></div>
-                <span className="text-gray-700">
-                  Campus Navigation
-                </span>
-              </div>
+            <div className="flex items-center gap-4">
+              <div className="w-3 h-3 rounded-full bg-emerald-400" />
+              <span className="text-gray-300 text-lg">
+                Smart Canteen Ordering
+              </span>
             </div>
-          </div>
 
-          {/* Right Side */}
-          <div className="flex justify-center">
-            <LoginForm />
-          </div>
+            <div className="flex items-center gap-4">
+              <div className="w-3 h-3 rounded-full bg-emerald-400" />
+              <span className="text-gray-300 text-lg">
+                Digital Library
+              </span>
+            </div>
 
+            <div className="flex items-center gap-4">
+              <div className="w-3 h-3 rounded-full bg-emerald-400" />
+              <span className="text-gray-300 text-lg">
+                Campus Navigation
+              </span>
+            </div>
+
+          </div>
         </div>
+
+        {/* RIGHT SIDE */}
+        <div className="flex justify-center lg:justify-end">
+          <LoginForm />
+        </div>
+
       </div>
     </div>
   );
