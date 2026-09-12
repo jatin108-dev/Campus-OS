@@ -1,8 +1,24 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Hero = () => {
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("campusOSUser");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  useEffect(() => {
+    const updateUser = () => {
+      const savedUser = localStorage.getItem("campusOSUser");
+      setUser(savedUser ? JSON.parse(savedUser) : null);
+    };
+
+    window.addEventListener("campusOSAuthChange", updateUser);
+    return () => window.removeEventListener("campusOSAuthChange", updateUser);
+  }, []);
+
   return (
     <section className="relative min-h-screen overflow-hidden bg-[#09090F] text-white">
 
@@ -97,24 +113,26 @@ const Hero = () => {
               className="mt-10 flex flex-wrap gap-4"
             >
 
-              <Link
-  to="/signup"
-  className="group inline-flex items-center rounded-2xl border border-white bg-white px-8 py-4 font-semibold text-neutral-900 transition-all duration-300 hover:-translate-y-0.5 hover:bg-neutral-100"
->
-  Get Started
+              {!user && (
+                <Link
+                  to="/signup"
+                  className="group inline-flex items-center rounded-2xl border border-white bg-white px-8 py-4 font-semibold text-neutral-900 transition-all duration-300 hover:-translate-y-0.5 hover:bg-neutral-100"
+                >
+                  Get Started
 
-  <ArrowRight
-    size={18}
-    className="ml-3 transition-transform duration-300 group-hover:translate-x-1"
-  />
-</Link>
+                  <ArrowRight
+                    size={18}
+                    className="ml-3 transition-transform duration-300 group-hover:translate-x-1"
+                  />
+                </Link>
+              )}
 
-              <Link
-                to="/login"
+              <a
+                href={user ? "#features" : "/login"}
                 className="rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold backdrop-blur-xl transition-all duration-300 hover:border-indigo-500 hover:bg-white/10"
               >
                 Explore Campus
-              </Link>
+              </a>
 
             </motion.div>
 
