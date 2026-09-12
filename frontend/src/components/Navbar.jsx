@@ -1,9 +1,38 @@
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GraduationCap } from "lucide-react";
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("campusOSUser");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  useEffect(() => {
+    const updateUser = () => {
+      const savedUser = localStorage.getItem("campusOSUser");
+      setUser(savedUser ? JSON.parse(savedUser) : null);
+    };
+
+    window.addEventListener("campusOSAuthChange", updateUser);
+    return () => window.removeEventListener("campusOSAuthChange", updateUser);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      localStorage.removeItem("campusOSUser");
+      setUser(null);
+      navigate("/");
+    }
+  };
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -71,23 +100,35 @@ const Navbar = () => {
 
         <div className="flex items-center gap-4">
 
-  <Link
-    to="/login"
-    className={`rounded-xl px-5 py-2.5 font-medium transition-all duration-300 ${
-      location.pathname === "/login"
-        ? "bg-white text-black"
-        : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
-    }`}
-  >
-    Login
-  </Link>
+  {user ? (
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="rounded-xl bg-red-500 px-5 py-2.5 font-medium text-white transition-all duration-300 hover:bg-red-400 active:scale-95"
+    >
+      Logout
+    </button>
+  ) : (
+    <>
+      <Link
+        to="/login"
+        className={`rounded-xl px-5 py-2.5 font-medium transition-all duration-300 ${
+          location.pathname === "/login"
+            ? "bg-white text-black"
+            : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
+        }`}
+      >
+        Login
+      </Link>
 
-  <Link
-    to="/signup"
-    className="rounded-xl bg-white px-5 py-2.5 font-medium text-black transition-all duration-300 hover:bg-neutral-200 active:scale-95"
-  >
-    Sign Up
-  </Link>
+      <Link
+        to="/signup"
+        className="rounded-xl bg-white px-5 py-2.5 font-medium text-black transition-all duration-300 hover:bg-neutral-200 active:scale-95"
+      >
+        Sign Up
+      </Link>
+    </>
+  )}
 
 </div>
 

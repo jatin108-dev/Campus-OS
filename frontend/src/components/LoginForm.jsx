@@ -34,6 +34,8 @@ const LoginForm = () => {
         }
       );
 
+      localStorage.setItem("campusOSUser", JSON.stringify(response.data.user));
+      window.dispatchEvent(new Event("campusOSAuthChange"));
       setMessage(response.data.message);
       navigate("/");
     } catch (error) {
