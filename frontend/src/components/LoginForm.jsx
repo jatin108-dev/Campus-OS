@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
 import {
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
   const [loginId, setLoginId] = useState("");
@@ -34,7 +35,7 @@ const LoginForm = () => {
       );
 
       setMessage(response.data.message);
-      console.log(response.data);
+      navigate("/");
     } catch (error) {
       console.log(error.response?.data);
 
