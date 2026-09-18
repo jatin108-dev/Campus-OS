@@ -5,6 +5,7 @@ import {
   Bell,
   ChevronRight,
   Clock3,
+  Home,
   IndianRupee,
   Loader2,
   LogOut,
@@ -284,6 +285,14 @@ const MerchantDashboard = () => {
             </p>
 
             <nav className="mt-3 space-y-1">
+              <Link
+                to="/"
+                className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm text-white/40 transition hover:bg-white/[0.03] hover:text-white"
+              >
+                <Home size={17} />
+                Home
+              </Link>
+
               <Link
                 to="/merchant"
                 className="flex items-center gap-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.06] px-3.5 py-3 text-sm font-medium text-emerald-400"
@@ -789,6 +798,14 @@ const MerchantDashboard = () => {
       {/* MOBILE BOTTOM NAV */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/[0.07] bg-[#090b0a]/95 px-3 py-2 backdrop-blur-xl lg:hidden">
         <div className="mx-auto flex max-w-lg items-center justify-around">
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-1 px-4 py-1.5 text-white/30"
+          >
+            <Home size={17} />
+            <span className="text-[8px]">Home</span>
+          </Link>
+
           <Link
             to="/merchant"
             className="flex flex-col items-center gap-1 px-4 py-1.5 text-emerald-400"
