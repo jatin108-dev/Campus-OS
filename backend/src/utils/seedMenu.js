@@ -8,8 +8,35 @@ dotenv.config({
 const mongoose = require("mongoose");
 const connectDB = require("../config/db");
 
+const User = require("../models/User");
 const Canteen = require("../models/Canteen");
 const MenuItem = require("../models/MenuItem");
+
+// --------------------------------------------------
+// VENDOR → CANTEEN MAPPING
+// --------------------------------------------------
+
+const vendorCanteenMap = {
+  "0069": {
+    canteenName: "BiteBox",
+    menuKey: "Bite Box",
+  },
+
+  "0079": {
+    canteenName: "Cafe Monk",
+    menuKey: "CafeMonk",
+  },
+
+  "0089": {
+    canteenName: "Dostea",
+    menuKey: "DosTea",
+  },
+
+  "0099": {
+    canteenName: "Chai Garam",
+    menuKey: "ChaiGaram",
+  },
+};
 
 // --------------------------------------------------
 // FOOD IMAGES
@@ -95,9 +122,6 @@ const images = {
   "Aloo Pyaz Paratha":
     "https://images.unsplash.com/photo-1626132647523-66f0bf380027?auto=format&fit=crop&w=900&q=80",
 
-  "Chole Bhature":
-    "https://www.spiceupthecurry.com/wp-content/uploads/2015/03/Chole-bhature-1.jpg",
-
   "Aloo Samosa Chaat":
     "https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=900&q=80",
 
@@ -106,7 +130,7 @@ const images = {
 
   // DosTea
   "Paneer Dosa":
-    "https://www.cookclickndevour.com/wp-content/uploads/2019/01/paneer-masala-dosa-recipe-1.jpg" ,
+    "https://www.cookclickndevour.com/wp-content/uploads/2019/01/paneer-masala-dosa-recipe-1.jpg",
 
   "Mysore Masala Dosa":
     "https://myfoodstory.com/wp-content/uploads/2025/08/Mysore-Masala-Dosa-Recipe-3.jpg",
@@ -133,75 +157,411 @@ const images = {
 
 const menuByCanteen = {
   "Bite Box": [
-    ["Masala Chai", "Hot Indian tea with aromatic spices", 25, "Beverages", 5],
-    ["Cold Coffee", "Chilled creamy cold coffee", 70, "Beverages", 8],
-    ["Veg Burger", "Crispy veg patty with fresh vegetables", 80, "Burgers", 10],
-    ["Paneer Roll", "Spicy paneer wrapped in soft flatbread", 90, "Rolls", 10],
-    ["Veg Grilled Sandwich", "Grilled sandwich loaded with vegetables", 75, "Sandwiches", 8],
-    ["Samosa", "Crispy samosa with spicy potato filling", 20, "Snacks", 5],
-    ["Masala Dosa", "Crispy dosa with masala potato filling", 80, "South Indian", 12],
+    [
+      "Masala Chai",
+      "Hot Indian tea with aromatic spices",
+      25,
+      "Beverages",
+      5,
+    ],
+    [
+      "Cold Coffee",
+      "Chilled creamy cold coffee",
+      70,
+      "Beverages",
+      8,
+    ],
+    [
+      "Veg Burger",
+      "Crispy veg patty with fresh vegetables",
+      80,
+      "Burgers",
+      10,
+    ],
+    [
+      "Paneer Roll",
+      "Spicy paneer wrapped in soft flatbread",
+      90,
+      "Rolls",
+      10,
+    ],
+    [
+      "Veg Grilled Sandwich",
+      "Grilled sandwich loaded with vegetables",
+      75,
+      "Sandwiches",
+      8,
+    ],
+    [
+      "Samosa",
+      "Crispy samosa with spicy potato filling",
+      20,
+      "Snacks",
+      5,
+    ],
+    [
+      "Masala Dosa",
+      "Crispy dosa with masala potato filling",
+      80,
+      "South Indian",
+      12,
+    ],
 
-    ["Loaded Cheese Fries", "Crispy fries topped with cheese", 100, "Snacks", 10],
-    ["Mexican Paneer Wrap", "Paneer wrap with Mexican-style seasoning", 110, "Rolls", 12],
-    ["Peri Peri Momos", "Steamed momos tossed in peri peri seasoning", 100, "Momos", 12],
-    ["Crispy Paneer Burger", "Crunchy paneer patty with creamy sauce", 120, "Burgers", 12],
-    ["Chole Bhature", "Authentic Delhi's Chole Bhature", 90, "Snacks", 8],
-    ["Chocolate Shake", "Rich chilled chocolate milkshake", 100, "Beverages", 8],
-    ["Pastry", "Delicious Pineapple Pastry", 50, "Desserts", 10],
+    [
+      "Loaded Cheese Fries",
+      "Crispy fries topped with cheese",
+      100,
+      "Snacks",
+      10,
+    ],
+    [
+      "Mexican Paneer Wrap",
+      "Paneer wrap with Mexican-style seasoning",
+      110,
+      "Rolls",
+      12,
+    ],
+    [
+      "Peri Peri Momos",
+      "Steamed momos tossed in peri peri seasoning",
+      100,
+      "Momos",
+      12,
+    ],
+    [
+      "Crispy Paneer Burger",
+      "Crunchy paneer patty with creamy sauce",
+      120,
+      "Burgers",
+      12,
+    ],
+    [
+      "Chole Bhature",
+      "Authentic Delhi's Chole Bhature",
+      90,
+      "Snacks",
+      8,
+    ],
+    [
+      "Chocolate Shake",
+      "Rich chilled chocolate milkshake",
+      100,
+      "Beverages",
+      8,
+    ],
+    [
+      "Pastry",
+      "Delicious Pineapple Pastry",
+      50,
+      "Desserts",
+      10,
+    ],
   ],
 
   CafeMonk: [
-    ["Masala Chai", "Classic Indian tea with spices", 30, "Beverages", 5],
-    ["Cold Coffee", "Smooth chilled coffee", 80, "Beverages", 8],
-    ["Veg Burger", "Fresh vegetable burger with creamy sauce", 85, "Burgers", 10],
-    ["Paneer Roll", "Grilled paneer wrapped with vegetables", 95, "Rolls", 10],
-    ["Veg Grilled Sandwich", "Golden grilled vegetable sandwich", 80, "Sandwiches", 8],
-    ["Samosa", "Crispy potato-filled samosa", 25, "Snacks", 5],
-    ["Masala Dosa", "Crispy dosa served with masala filling", 90, "South Indian", 12],
+    [
+      "Masala Chai",
+      "Classic Indian tea with spices",
+      30,
+      "Beverages",
+      5,
+    ],
+    [
+      "Cold Coffee",
+      "Smooth chilled coffee",
+      80,
+      "Beverages",
+      8,
+    ],
+    [
+      "Veg Burger",
+      "Fresh vegetable burger with creamy sauce",
+      85,
+      "Burgers",
+      10,
+    ],
+    [
+      "Paneer Roll",
+      "Grilled paneer wrapped with vegetables",
+      95,
+      "Rolls",
+      10,
+    ],
+    [
+      "Veg Grilled Sandwich",
+      "Golden grilled vegetable sandwich",
+      80,
+      "Sandwiches",
+      8,
+    ],
+    [
+      "Samosa",
+      "Crispy potato-filled samosa",
+      25,
+      "Snacks",
+      5,
+    ],
+    [
+      "Masala Dosa",
+      "Crispy dosa served with masala filling",
+      90,
+      "South Indian",
+      12,
+    ],
 
-    ["Cappuccino", "Rich espresso topped with steamed milk foam", 110, "Coffee", 7],
-    ["Cafe Latte", "Smooth espresso with creamy milk", 120, "Coffee", 7],
-    ["Mocha", "Chocolate espresso with steamed milk", 130, "Coffee", 8],
-    ["Peri Peri Paneer Sandwich", "Grilled paneer sandwich with peri peri sauce", 120, "Sandwiches", 10],
-    ["Cheese Garlic Toast", "Crispy toast topped with cheese and garlic", 100, "Snacks", 8],
-    ["Blueberry Cheesecake", "Creamy cheesecake with blueberry topping", 150, "Desserts", 12],
-    ["Chocolate Chip Cookie", "Fresh baked chocolate chip cookie", 60, "Desserts", 5],
+    [
+      "Cappuccino",
+      "Rich espresso topped with steamed milk foam",
+      110,
+      "Coffee",
+      7,
+    ],
+    [
+      "Cafe Latte",
+      "Smooth espresso with creamy milk",
+      120,
+      "Coffee",
+      7,
+    ],
+    [
+      "Mocha",
+      "Chocolate espresso with steamed milk",
+      130,
+      "Coffee",
+      8,
+    ],
+    [
+      "Peri Peri Paneer Sandwich",
+      "Grilled paneer sandwich with peri peri sauce",
+      120,
+      "Sandwiches",
+      10,
+    ],
+    [
+      "Cheese Garlic Toast",
+      "Crispy toast topped with cheese and garlic",
+      100,
+      "Snacks",
+      8,
+    ],
+    [
+      "Blueberry Cheesecake",
+      "Creamy cheesecake with blueberry topping",
+      150,
+      "Desserts",
+      12,
+    ],
+    [
+      "Chocolate Chip Cookie",
+      "Fresh baked chocolate chip cookie",
+      60,
+      "Desserts",
+      5,
+    ],
   ],
 
   ChaiGaram: [
-    ["Masala Chai", "Strong masala chai with Indian spices", 20, "Beverages", 5],
-    ["Cold Coffee", "Classic chilled cold coffee", 65, "Beverages", 8],
-    ["Veg Burger", "Classic vegetable burger", 75, "Burgers", 10],
-    ["Paneer Roll", "Spicy paneer roll with fresh onions", 85, "Rolls", 10],
-    ["Veg Grilled Sandwich", "Crispy grilled vegetable sandwich", 70, "Sandwiches", 8],
-    ["Samosa", "Fresh crispy potato samosa", 15, "Snacks", 5],
-    ["Masala Dosa", "South Indian crispy masala dosa", 75, "South Indian", 12],
+    [
+      "Masala Chai",
+      "Strong masala chai with Indian spices",
+      20,
+      "Beverages",
+      5,
+    ],
+    [
+      "Cold Coffee",
+      "Classic chilled cold coffee",
+      65,
+      "Beverages",
+      8,
+    ],
+    [
+      "Veg Burger",
+      "Classic vegetable burger",
+      75,
+      "Burgers",
+      10,
+    ],
+    [
+      "Paneer Roll",
+      "Spicy paneer roll with fresh onions",
+      85,
+      "Rolls",
+      10,
+    ],
+    [
+      "Veg Grilled Sandwich",
+      "Crispy grilled vegetable sandwich",
+      70,
+      "Sandwiches",
+      8,
+    ],
+    [
+      "Samosa",
+      "Fresh crispy potato samosa",
+      15,
+      "Snacks",
+      5,
+    ],
+    [
+      "Masala Dosa",
+      "South Indian crispy masala dosa",
+      75,
+      "South Indian",
+      12,
+    ],
 
-    ["Ginger Chai", "Tea infused with fresh ginger", 25, "Beverages", 5],
-    ["Elaichi Chai", "Aromatic cardamom tea", 25, "Beverages", 5],
-    ["Kulhad Chai", "Traditional tea served in a kulhad", 30, "Beverages", 5],
-    ["Aloo Pyaz Paratha", "Stuffed potato and onion paratha", 70, "Breakfast", 10],
-    ["Chole Bhature", "Spicy chickpeas with fluffy bhature", 100, "North Indian", 15],
-    ["Aloo Samosa Chaat", "Samosa topped with chutneys and spices", 60, "Chaat", 8],
-    ["Kesar Badam Milk", "Chilled saffron almond milk", 90, "Beverages", 7],
+    [
+      "Ginger Chai",
+      "Tea infused with fresh ginger",
+      25,
+      "Beverages",
+      5,
+    ],
+    [
+      "Elaichi Chai",
+      "Aromatic cardamom tea",
+      25,
+      "Beverages",
+      5,
+    ],
+    [
+      "Kulhad Chai",
+      "Traditional tea served in a kulhad",
+      30,
+      "Beverages",
+      5,
+    ],
+    [
+      "Aloo Pyaz Paratha",
+      "Stuffed potato and onion paratha",
+      70,
+      "Breakfast",
+      10,
+    ],
+    [
+      "Chole Bhature",
+      "Spicy chickpeas with fluffy bhature",
+      100,
+      "North Indian",
+      15,
+    ],
+    [
+      "Aloo Samosa Chaat",
+      "Samosa topped with chutneys and spices",
+      60,
+      "Chaat",
+      8,
+    ],
+    [
+      "Kesar Badam Milk",
+      "Chilled saffron almond milk",
+      90,
+      "Beverages",
+      7,
+    ],
   ],
 
   DosTea: [
-    ["Masala Chai", "Classic hot masala tea", 25, "Beverages", 5],
-    ["Cold Coffee", "Refreshing chilled coffee", 75, "Beverages", 8],
-    ["Veg Burger", "Crispy vegetable patty burger", 80, "Burgers", 10],
-    ["Paneer Roll", "Paneer roll with spicy filling", 90, "Rolls", 10],
-    ["Veg Grilled Sandwich", "Grilled sandwich with fresh vegetables", 75, "Sandwiches", 8],
-    ["Samosa", "Crispy spicy potato samosa", 20, "Snacks", 5],
-    ["Masala Dosa", "Crispy dosa with potato masala", 85, "South Indian", 12],
+    [
+      "Masala Chai",
+      "Classic hot masala tea",
+      25,
+      "Beverages",
+      5,
+    ],
+    [
+      "Cold Coffee",
+      "Refreshing chilled coffee",
+      75,
+      "Beverages",
+      8,
+    ],
+    [
+      "Veg Burger",
+      "Crispy vegetable patty burger",
+      80,
+      "Burgers",
+      10,
+    ],
+    [
+      "Paneer Roll",
+      "Paneer roll with spicy filling",
+      90,
+      "Rolls",
+      10,
+    ],
+    [
+      "Veg Grilled Sandwich",
+      "Grilled sandwich with fresh vegetables",
+      75,
+      "Sandwiches",
+      8,
+    ],
+    [
+      "Samosa",
+      "Crispy spicy potato samosa",
+      20,
+      "Snacks",
+      5,
+    ],
+    [
+      "Masala Dosa",
+      "Crispy dosa with potato masala",
+      85,
+      "South Indian",
+      12,
+    ],
 
-    ["Paneer Dosa", "Dosa stuffed with spicy paneer filling", 110, "South Indian", 12],
-    ["Mysore Masala Dosa", "Spicy Mysore-style masala dosa", 105, "South Indian", 12],
-    ["Idli Sambar", "Soft idlis served with hot sambar", 70, "South Indian", 10],
-    ["Medu Vada", "Crispy South Indian lentil fritters", 65, "South Indian", 8],
-    ["Uttapam", "Thick dosa topped with fresh vegetables", 85, "South Indian", 10],
-    ["Filter Coffee", "Traditional South Indian filter coffee", 55, "Beverages", 5],
-    ["Ghee Podi Dosa", "Crispy dosa with ghee and podi", 100, "South Indian", 10],
+    [
+      "Paneer Dosa",
+      "Dosa stuffed with spicy paneer filling",
+      110,
+      "South Indian",
+      12,
+    ],
+    [
+      "Mysore Masala Dosa",
+      "Spicy Mysore-style masala dosa",
+      105,
+      "South Indian",
+      12,
+    ],
+    [
+      "Idli Sambar",
+      "Soft idlis served with hot sambar",
+      70,
+      "South Indian",
+      10,
+    ],
+    [
+      "Medu Vada",
+      "Crispy South Indian lentil fritters",
+      65,
+      "South Indian",
+      8,
+    ],
+    [
+      "Uttapam",
+      "Thick dosa topped with fresh vegetables",
+      85,
+      "South Indian",
+      10,
+    ],
+    [
+      "Filter Coffee",
+      "Traditional South Indian filter coffee",
+      55,
+      "Beverages",
+      5,
+    ],
+    [
+      "Ghee Podi Dosa",
+      "Crispy dosa with ghee and podi",
+      100,
+      "South Indian",
+      10,
+    ],
   ],
 };
 
@@ -213,32 +573,51 @@ const seedMenu = async () => {
   try {
     await connectDB();
 
-    const canteens = await Canteen.find({
-      name: {
-        $in: ["Bite Box", "CafeMonk", "ChaiGaram", "DosTea"],
-      },
-    });
-
-    if (canteens.length !== 4) {
-      throw new Error(
-        `Expected 4 canteens, but found ${canteens.length}. Run seedCanteens.js first.`
-      );
-    }
-
-    // Remove existing menu items for these canteens
-    await MenuItem.deleteMany({
-      canteen: { $in: canteens.map((canteen) => canteen._id) },
-    });
-
     const menuItems = [];
 
-    for (const canteen of canteens) {
-      const items = menuByCanteen[canteen.name];
+    for (const [vendorId, config] of Object.entries(vendorCanteenMap)) {
+      // Find vendor using Vendor ID
+      const vendor = await User.findOne({
+        vendorId: vendorId,
+        role: "vendor",
+      });
 
-      if (!items) {
-        console.log(`No menu data found for ${canteen.name}`);
+      if (!vendor) {
+        console.log(
+          `❌ Vendor not found: ${vendorId} (${config.canteenName})`
+        );
         continue;
       }
+
+      // Find ONLY the canteen owned by this vendor
+      const canteen = await Canteen.findOne({
+        owner: vendor._id,
+      });
+
+      if (!canteen) {
+        console.log(
+          `❌ Canteen not found for Vendor ${vendorId} (${config.canteenName})`
+        );
+        continue;
+      }
+
+      console.log(
+        `✓ ${vendorId} → ${vendor.fullName} → ${canteen.name}`
+      );
+
+      const items = menuByCanteen[config.menuKey];
+
+      if (!items) {
+        console.log(
+          `❌ No menu data found for ${config.menuKey}`
+        );
+        continue;
+      }
+
+      // Remove existing menu items ONLY for this vendor's canteen
+      await MenuItem.deleteMany({
+        canteen: canteen._id,
+      });
 
       for (const [
         name,
@@ -260,20 +639,41 @@ const seedMenu = async () => {
       }
     }
 
+    if (menuItems.length === 0) {
+      throw new Error(
+        "No menu items were prepared. Check Vendor IDs and associated canteens."
+      );
+    }
+
     const createdItems = await MenuItem.insertMany(menuItems);
 
     console.log("\n========================================");
     console.log("        MENU SEED COMPLETED");
     console.log("========================================");
     console.log(`Total menu items: ${createdItems.length}`);
-    console.log(`Canteens: ${canteens.length}`);
 
-    for (const canteen of canteens) {
+    for (const [vendorId, config] of Object.entries(vendorCanteenMap)) {
+      const vendor = await User.findOne({
+        vendorId: vendorId,
+        role: "vendor",
+      });
+
+      if (!vendor) continue;
+
+      const canteen = await Canteen.findOne({
+        owner: vendor._id,
+      });
+
+      if (!canteen) continue;
+
       const count = createdItems.filter(
-        (item) => item.canteen.toString() === canteen._id.toString()
+        (item) =>
+          item.canteen.toString() === canteen._id.toString()
       ).length;
 
-      console.log(`✓ ${canteen.name}: ${count} items`);
+      console.log(
+        `✓ ${vendorId} | ${vendor.fullName} | ${canteen.name}: ${count} items`
+      );
     }
 
     console.log("========================================\n");
