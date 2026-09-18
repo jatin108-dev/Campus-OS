@@ -208,19 +208,45 @@ const deleteMenuItem = async (req, res) => {
 
 const getMerchantMenu = async (req, res) => {
   try {
+    console.log("=================================");
+    console.log("🔥 getMerchantMenu HIT");
+    console.log("👤 req.user:", req.user);
+    console.log("=================================");
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    console.log("Role:", req.user.role);
+    console.log("User ID:", req.user._id);
+
     let canteens;
 
     if (req.user.role === "admin") {
-      canteens = await Canteen.find({}).select(
-        "_id name location owner isOpen"
-      );
+      console.log("Fetching all canteens for admin...");
+
+      canteens = await Canteen.find({})
+        .select("_id name location owner isOpen")
+        .lean();
     } else {
+      console.log("Fetching canteens owned by:", req.user._id);
+
       canteens = await Canteen.find({
         owner: req.user._id,
-      }).select("_id name location owner isOpen");
+      })
+        .select("_id name location owner isOpen")
+        .lean();
     }
 
+    console.log("🍴 Canteens found:", canteens.length);
+    console.log("Canteens:", canteens);
+
     if (!canteens.length) {
+      console.log("⚠️ No canteens found");
+
       return res.status(200).json({
         success: true,
         count: 0,
@@ -229,14 +255,22 @@ const getMerchantMenu = async (req, res) => {
       });
     }
 
-    const canteenIds = canteens.map((canteen) => canteen._id);
+    const canteenIds = canteens.map(
+      (canteen) => canteen._id
+    );
+
+    console.log("🏪 Canteen IDs:", canteenIds);
 
     const menuItems = await MenuItem.find({
       canteen: { $in: canteenIds },
-    }).sort({
-      category: 1,
-      createdAt: -1,
-    });
+    })
+      .sort({
+        category: 1,
+        createdAt: -1,
+      })
+      .lean();
+
+    console.log("🍔 Menu items found:", menuItems.length);
 
     return res.status(200).json({
       success: true,
@@ -245,11 +279,16 @@ const getMerchantMenu = async (req, res) => {
       menuItems,
     });
   } catch (error) {
-    console.error("Get merchant menu error:", error);
+    console.error("=================================");
+    console.error("❌ Get merchant menu error");
+    console.error("Message:", error.message);
+    console.error("Name:", error.name);
+    console.error("Stack:", error.stack);
+    console.error("=================================");
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch merchant menu",
+      message: error.message || "Failed to fetch merchant menu",
     });
   }
 };

@@ -8,15 +8,18 @@ const {
   deleteMenuItem,
 } = require("../../controllers/menu/menuController");
 
-const { protect, authorize } = require("../../middleware/authMiddleware");
+const {
+  protect,
+  authorize,
+} = require("../../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Public menu
-router.get("/:canteenId", getMenuByCanteen);
+// =====================================================
+// VENDOR / ADMIN MENU
+// IMPORTANT: Specific routes MUST come before /:canteenId
+// =====================================================
 
-// Vendor/Admin menu
-// IMPORTANT: keep this BEFORE /:canteenId
 router.get(
   "/merchant",
   protect,
@@ -43,6 +46,16 @@ router.delete(
   protect,
   authorize("vendor", "admin"),
   deleteMenuItem
+);
+
+// =====================================================
+// PUBLIC STUDENT MENU
+// Keep dynamic route LAST
+// =====================================================
+
+router.get(
+  "/:canteenId",
+  getMenuByCanteen
 );
 
 module.exports = router;
