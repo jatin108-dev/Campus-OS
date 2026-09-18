@@ -26,9 +26,7 @@ const orderItemSchema = new mongoose.Schema(
       min: 0,
     },
   },
-  {
-    _id: false,
-  }
+  { _id: false }
 );
 
 const orderSchema = new mongoose.Schema(
@@ -48,9 +46,13 @@ const orderSchema = new mongoose.Schema(
     items: {
       type: [orderItemSchema],
       required: true,
+
       validate: {
-        validator: (items) => items.length > 0,
-        message: "Order must contain at least one item",
+        validator: (items) =>
+          Array.isArray(items) && items.length > 0,
+
+        message:
+          "Order must contain at least one item",
       },
     },
 
@@ -60,32 +62,72 @@ const orderSchema = new mongoose.Schema(
       min: 0,
     },
 
+    /*
+     * Human-readable pickup time.
+     * Example: "10:45"
+     */
     pickupTime: {
       type: String,
       required: true,
-    },
-
-    building: {
-      type: String,
-      required: true,
       trim: true,
     },
 
-    floor: {
-      type: String,
+    /*
+     * Exact pickup timestamp.
+     * This lets the backend validate the
+     * selected time correctly.
+     */
+    pickupAt: {
+      type: Date,
       required: true,
-      trim: true,
     },
 
-    room: {
-      type: String,
+    /*
+     * Internal 40-minute pickup window.
+     *
+     * We don't have to show this on the
+     * checkout UI.
+     */
+    pickupWindowEnd: {
+      type: Date,
       required: true,
+    },
+
+    /*
+     * Optional student note.
+     */
+    note: {
+      type: String,
+      default: "",
       trim: true,
+      maxlength: 200,
+    },
+
+    /*
+     * Counter pickup only.
+     */
+    pickupMethod: {
+      type: String,
+      enum: ["COUNTER"],
+      default: "COUNTER",
+    },
+
+    /*
+     * UPI only.
+     */
+    paymentMethod: {
+      type: String,
+      enum: ["UPI"],
+      default: "UPI",
     },
 
     paymentStatus: {
       type: String,
-      enum: ["PENDING", "PAID", "FAILED"],
+      enum: [
+        "PENDING",
+        "PAID",
+        "FAILED",
+      ],
       default: "PENDING",
     },
 
@@ -113,4 +155,5 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Order", orderSchema);
+module.exports =
+  mongoose.model("Order", orderSchema);
