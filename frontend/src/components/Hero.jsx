@@ -1,351 +1,391 @@
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  MapPinned,
+  ShoppingBag,
+  UtensilsCrossed,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("campusOSUser");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const updateUser = () => {
-      const savedUser = localStorage.getItem("campusOSUser");
-      setUser(savedUser ? JSON.parse(savedUser) : null);
+    const loadUser = () => {
+      try {
+        const storedUser = localStorage.getItem("campusOSUser");
+        setUser(storedUser ? JSON.parse(storedUser) : null);
+      } catch {
+        setUser(null);
+      }
     };
 
-    window.addEventListener("campusOSAuthChange", updateUser);
-    return () => window.removeEventListener("campusOSAuthChange", updateUser);
+    loadUser();
+
+    window.addEventListener("campusOSAuthChange", loadUser);
+
+    return () => {
+      window.removeEventListener("campusOSAuthChange", loadUser);
+    };
   }, []);
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#09090F] text-white">
+    <section className="relative overflow-hidden bg-[#09090f] text-white">
+      {/* Background Grid */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)
+          `,
+          backgroundSize: "52px 52px",
+        }}
+      />
 
-      {/* Background */}
-      <div className="absolute inset-0">
+      {/* Ambient Glows */}
+      <div className="pointer-events-none absolute left-[8%] top-[28%] h-64 w-64 rounded-full bg-emerald-500/[0.035] blur-3xl" />
 
-  {/* Soft Black Glow */}
-  <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-white/5 blur-[160px]" />
-  <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-white/5 blur-[160px]" />
+      <div className="pointer-events-none absolute right-[12%] top-[32%] h-72 w-72 rounded-full bg-amber-400/[0.025] blur-3xl" />
 
-  {/* Grid */}
-  <div
-    className="absolute inset-0 opacity-[0.04]"
-    style={{
-      backgroundImage: `
-        linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)
-      `,
-      backgroundSize: "40px 40px",
-    }}
-  />
+      {/* =====================================================
+          HERO CONTAINER
+          Compact version
+      ===================================================== */}
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-155px)] max-w-7xl items-center px-6 pb-10 pt-32 sm:px-8 sm:pt-36 lg:px-10 lg:pb-10 lg:pt-36">
+        <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:gap-10">
 
-</div>
-
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center px-6 py-20 lg:px-10">
-
-        <div className="grid w-full items-center gap-20 lg:grid-cols-2">
-
-          {/* LEFT SIDE */}
-
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          {/* =====================================================
+              LEFT CONTENT
+          ===================================================== */}
+          <div className="max-w-xl">
 
             {/* Badge */}
-{/* 
             <motion.div
-              initial={{ opacity: 0, y: -15 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-5 py-2 backdrop-blur-xl"
-            > */}
-              {/* <span className="mr-2 h-2 w-2 rounded-full bg-emerald-400"></span> */}
-
-              {/* <span className="text-sm font-medium tracking-wide text-slate-300">
-                Smart Campus Platform
-              </span> */}
-            {/* </motion.div>  */}
-
-            {/* Heading */}
-
-            <motion.h1
-              initial={{ opacity: 0, y: 35 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mt-8 text-5xl font-black leading-[1.05] tracking-tight md:text-6xl xl:text-7xl"
+              transition={{ duration: 0.45 }}
             >
-              The Digital
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.045] px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Smart Campus Platform
+              </span>
+            </motion.div>
+
+            {/* =================================================
+                MAIN HEADING
+            ================================================= */}
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.05 }}
+              className="mt-6 text-[3rem] font-extrabold leading-[0.91] tracking-[-0.045em] sm:text-[3.6rem] lg:text-[3.95rem]"
+            >
+              <span className="text-white">
+                The Digital
+              </span>
+
               <br />
 
-              Operating System
+              <span className="text-white">
+                Operating
+              </span>
+
               <br />
 
-              for
+              <span className="text-white">
+                System
+              </span>
 
-              Modern Campuses
-              
+              <br />
+
+              {/* FOR */}
+              <span className="text-white/30">
+                for{" "}
+              </span>
+
+              {/* =================================================
+                  GNIOT — GOLD CURSIVE
+              ================================================= */}
+              <span
+                className="relative inline-block font-normal italic tracking-[-0.015em] text-[#c7a85b]"
+                style={{
+                  fontFamily:
+                    '"Brush Script MT", "Segoe Script", "URW Chancery L", cursive',
+                }}
+              >
+                GNIOT
+
+                <span className="absolute -bottom-1 left-[3%] h-[2px] w-[94%] rounded-full bg-[#c7a85b]/60" />
+              </span>
+
+              <br />
+
+              <span className="text-white/30">
+                Campus
+              </span>
             </motion.h1>
 
             {/* Description */}
-
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.45 }}
-              className="mt-8 max-w-xl text-lg leading-8 text-slate-400"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="mt-5 max-w-lg text-sm leading-6 text-slate-400 sm:text-[15px]"
             >
-              CampusOS connects students, faculty and campus services through
-              one intelligent platform. Order food, access the library,
-              manage academics and stay updated with campus activities
-              effortlessly.
+              CampusOS connects students with essential campus
+              services through one intelligent platform. Order food,
+              skip queues, and navigate your campus with ease.
             </motion.p>
 
             {/* CTA */}
-
             <motion.div
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="mt-10 flex flex-wrap gap-4"
+              transition={{ duration: 0.5, delay: 0.22 }}
+              className="mt-6"
             >
-
-              {!user && (
+              {!user ? (
                 <Link
-                  to="/signup"
-                  className="group inline-flex items-center rounded-2xl border border-white bg-white px-8 py-4 font-semibold text-neutral-900 transition-all duration-300 hover:-translate-y-0.5 hover:bg-neutral-100"
+                  to="/login"
+                  className="group inline-flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.045] px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:border-emerald-400/25 hover:bg-emerald-400/[0.06]"
                 >
                   Get Started
 
                   <ArrowRight
-                    size={18}
-                    className="ml-3 transition-transform duration-300 group-hover:translate-x-1"
+                    size={16}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
                   />
                 </Link>
+              ) : (
+                <a
+                  href="#features"
+                  className="group inline-flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.045] px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:border-emerald-400/25 hover:bg-emerald-400/[0.06]"
+                >
+                  Explore Campus
+
+                  <ArrowRight
+                    size={16}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  />
+                </a>
               )}
-
-              <a
-                href={user ? "#features" : "/login"}
-                className="rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold backdrop-blur-xl transition-all duration-300 hover:border-indigo-500 hover:bg-white/10"
-              >
-                Explore Campus
-              </a>
-
             </motion.div>
 
-            {/* Stats */}
-
+            {/* Compact Stats */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="mt-16 grid grid-cols-3 gap-8"
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-6 flex items-center gap-6"
             >
-
               <div>
-                <h2 className="text-4xl font-black text-white">
-                  20+
-                </h2>
+                <p className="text-lg font-semibold text-white/85">
+                  2
+                </p>
 
-                <p className="mt-2 text-sm uppercase tracking-wider text-slate-500">
-                  Campus Services
+                <p className="mt-0.5 text-[9px] uppercase tracking-[0.14em] text-white/25">
+                  Smart Services
                 </p>
               </div>
 
+              <div className="h-7 w-px bg-white/10" />
+
               <div>
-                <h2 className="text-4xl font-black text-white">
+                <p className="text-lg font-semibold text-white/85">
                   24/7
-                </h2>
+                </p>
 
-                <p className="mt-2 text-sm uppercase tracking-wider text-slate-500">
-                  Smart Access
+                <p className="mt-0.5 text-[9px] uppercase tracking-[0.14em] text-white/25">
+                  Digital Access
                 </p>
               </div>
+
+              <div className="h-7 w-px bg-white/10" />
 
               <div>
-                <h2 className="text-4xl font-black text-white">
-                  100%
-                </h2>
+                <p className="text-lg font-semibold text-white/85">
+                  1
+                </p>
 
-                <p className="mt-2 text-sm uppercase tracking-wider text-slate-500">
-                  Digital Experience
+                <p className="mt-0.5 text-[9px] uppercase tracking-[0.14em] text-white/25">
+                  Campus Platform
                 </p>
               </div>
-
             </motion.div>
+          </div>
 
-          </motion.div>
-
-          {/* RIGHT SIDE */}
-          {/* Continue with Part 2 */}
-                    {/* RIGHT SIDE */}
-
+          {/* =====================================================
+              RIGHT DASHBOARD
+          ===================================================== */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 25 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, delay: 0.2 }}
-            className="relative hidden lg:flex justify-center"
+            transition={{ duration: 0.65, delay: 0.12 }}
+            className="relative mx-auto w-full max-w-xl lg:ml-auto"
           >
-            {/* Floating Card 1 */}
+
+            {/* Floating Smart Canteen */}
             <motion.div
-              animate={{ y: [0, -12, 0] }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute -left-10 top-10 z-20 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-4 shadow-2xl"
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.55 }}
+              className="absolute -left-2 top-8 z-20 hidden w-52 rounded-xl border border-emerald-400/15 bg-[#0d1714]/95 p-3.5 shadow-2xl backdrop-blur-xl sm:block lg:-left-12"
             >
-              {/* <p className="text-xs text-slate-400">Today's Orders</p> */}
-              {/* <h3 className="mt-1 text-3xl font-bold">24</h3> */}
-            </motion.div>
-
-            {/* Floating Card 2 */}
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute -right-8 bottom-12 z-20 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-4 shadow-2xl"
-            >
-              {/* <p className="text-xs text-slate-400">Attendance</p>
-              <h3 className="mt-1 text-3xl font-bold">92%</h3> */}
-            </motion.div>
-
-            {/* Dashboard */}
-            <div className="relative w-[520px] rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-6 shadow-[0_30px_80px_rgba(0,0,0,.45)]">
-
-              {/* Top */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-400/[0.08] text-emerald-400">
+                  <UtensilsCrossed size={17} />
+                </div>
 
                 <div>
-                  <h2 className="text-xl font-bold">
-                    Campus Dashboard
+                  <p className="text-[9px] uppercase tracking-[0.14em] text-white/25">
+                    Smart Canteen
+                  </p>
+
+                  <p className="mt-0.5 text-xs font-semibold text-white">
+                    Skip the queue
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Main Dashboard */}
+            <div className="rounded-[1.6rem] border border-white/10 bg-[#111217]/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5">
+
+              {/* Dashboard Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-emerald-400/75">
+                    CampusOS
+                  </p>
+
+                  <h2 className="mt-1.5 text-lg font-bold tracking-tight sm:text-xl">
+                    Campus at a glance
                   </h2>
 
-                  <p className="text-sm text-slate-400">
-                    Everything in one place
+                  <p className="mt-0.5 text-[10px] text-white/25">
+                    Essential campus services
                   </p>
                 </div>
 
-                <div className="flex gap-2">
-                  <span className="h-3 w-3 rounded-full bg-red-500"></span>
-                  <span className="h-3 w-3 rounded-full bg-yellow-500"></span>
-                  <span className="h-3 w-3 rounded-full bg-green-500"></span>
+                <div className="flex gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-red-500/80" />
+                  <span className="h-2 w-2 rounded-full bg-amber-400/80" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
                 </div>
-
               </div>
 
-              {/* Grid */}
-              <div className="mt-6 grid grid-cols-2 gap-5">
+              <div className="my-4 h-px bg-white/[0.07]" />
 
-                <div className="rounded-2xl bg-slate-900/70 p-5 border border-white/5">
-                  <p className="text-sm text-slate-400">
-                    Library Books
-                  </p>
+              {/* Service Cards */}
+              <div className="grid grid-cols-2 gap-3">
 
-                  <h3 className="mt-3 text-3xl font-bold">
-                    08
-                  </h3>
-
-                  <div className="mt-4 h-2 rounded-full bg-slate-700">
-                    <div className="h-full w-3/4 rounded-full bg-indigo-500"></div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-slate-900/70 p-5 border border-white/5">
-                  <p className="text-sm text-slate-400">
-                    Canteen Wallet
-                  </p>
-
-                  <h3 className="mt-3 text-3xl font-bold">
-                    ₹820
-                  </h3>
-
-                  <div className="mt-4 h-2 rounded-full bg-slate-700">
-                    <div className="h-full w-2/3 rounded-full bg-emerald-500"></div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-slate-900/70 p-5 border border-white/5">
-                  <p className="text-sm text-slate-400">
-                    Assignments
-                  </p>
-
-                  <h3 className="mt-3 text-3xl font-bold">
-                    05
-                  </h3>
-
-                  <div className="mt-4 flex gap-2">
-                    <span className="rounded-full bg-violet-500/20 px-3 py-1 text-xs text-violet-300">
-                      Pending
-                    </span>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-slate-900/70 p-5 border border-white/5">
-                  <p className="text-sm text-slate-400">
-                    Notifications
-                  </p>
-
-                  <h3 className="mt-3 text-3xl font-bold">
-                    12
-                  </h3>
-
-                  <div className="mt-4 flex gap-2">
-                    <span className="rounded-full bg-cyan-500/20 px-3 py-1 text-xs text-cyan-300">
-                      Live
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Bottom */}
-              <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">
-                    Quick Access
-                  </h3>
-
-                  <span className="text-sm text-slate-500">
-                    CampusOS
-                  </span>
-                </div>
-
-                <div className="mt-5 grid grid-cols-3 gap-4">
-
-                  {[
-                    "Canteen",
-                    "Library",
-                    "Profile",
-                  ].map((item) => (
-                    <div
-                      key={item}
-                      className="cursor-pointer rounded-xl border border-white/10 bg-white/5 py-4 text-center text-sm text-white transition-all duration-300 hover:border-white hover:bg-white hover:text-black"
-                    >
-                      {item}
+                {/* Smart Canteen */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = "/canteen";
+                  }}
+                  className="group rounded-xl border border-emerald-400/10 bg-[#09130f] p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-emerald-400/25"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-400/[0.08] text-emerald-400">
+                      <ShoppingBag size={17} />
                     </div>
-                  ))}
 
+                    <ArrowRight
+                      size={15}
+                      className="text-white/15 transition group-hover:translate-x-1 group-hover:text-emerald-400"
+                    />
+                  </div>
+
+                  <p className="mt-4 text-[10px] text-slate-400">
+                    Smart Canteen
+                  </p>
+
+                  <h3 className="mt-1 text-base font-bold text-white">
+                    Order Food
+                  </h3>
+
+                  <div className="mt-3 flex items-center gap-1.5 text-[10px] text-emerald-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    Open for orders
+                  </div>
+                </button>
+
+                {/* Campus Navigation */}
+                <div className="rounded-xl border border-amber-400/10 bg-[#13130f] p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400/[0.07] text-amber-300">
+                      <MapPinned size={17} />
+                    </div>
+
+                    <span className="rounded-full border border-amber-400/15 px-2.5 py-1 text-[8px] font-medium uppercase tracking-[0.12em] text-amber-300/70">
+                      Soon
+                    </span>
+                  </div>
+
+                  <p className="mt-4 text-[10px] text-slate-400">
+                    Campus Navigation
+                  </p>
+
+                  <h3 className="mt-1 text-base font-bold text-white">
+                    Explore Campus
+                  </h3>
+
+                  <div className="mt-3 flex items-center gap-1.5 text-[10px] text-amber-300/60">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-300/70" />
+                    Coming soon
+                  </div>
                 </div>
-
               </div>
 
+              {/* Bottom Info */}
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-white/25">
+                  <UtensilsCrossed size={14} />
+                </div>
+
+                <div>
+                  <p className="text-[8px] uppercase tracking-[0.13em] text-white/20">
+                    Campus experience
+                  </p>
+
+                  <p className="mt-0.5 text-xs font-medium text-white/70">
+                    Simple. Connected. Digital.
+                  </p>
+                </div>
+              </div>
             </div>
 
+            {/* Floating Navigation Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="absolute -bottom-4 right-0 z-20 hidden w-56 rounded-xl border border-amber-400/10 bg-[#14140f]/95 p-3.5 shadow-2xl backdrop-blur-xl sm:block lg:-right-10"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/[0.07] text-amber-300">
+                  <MapPinned size={17} />
+                </div>
+
+                <div>
+                  <p className="text-[9px] uppercase tracking-[0.13em] text-white/25">
+                    Campus Navigation
+                  </p>
+
+                  <p className="mt-0.5 text-xs font-semibold text-white">
+                    Coming Soon
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
           </motion.div>
-
         </div>
-
       </div>
-
     </section>
   );
 };

@@ -26,9 +26,12 @@ function CanteenHome() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/api/canteens`, {
-          credentials: "include",
-        });
+        const response = await fetch(
+          `${API_URL}/api/canteens`,
+          {
+            credentials: "include",
+          }
+        );
 
         const data = await response.json();
 
@@ -38,12 +41,18 @@ function CanteenHome() {
           );
         }
 
-        setCanteens(data.canteens || data.data || []);
+        setCanteens(
+          data.canteens || data.data || []
+        );
       } catch (err) {
-        console.error("Canteen fetch error:", err);
+        console.error(
+          "Canteen fetch error:",
+          err
+        );
 
         setError(
-          err.message || "Unable to load canteens"
+          err.message ||
+            "Unable to load canteens"
         );
       } finally {
         setLoading(false);
@@ -62,9 +71,15 @@ function CanteenHome() {
 
     return canteens.filter((canteen) => {
       return (
-        canteen.name?.toLowerCase().includes(query) ||
-        canteen.location?.toLowerCase().includes(query) ||
-        canteen.description?.toLowerCase().includes(query)
+        canteen.name
+          ?.toLowerCase()
+          .includes(query) ||
+        canteen.location
+          ?.toLowerCase()
+          .includes(query) ||
+        canteen.description
+          ?.toLowerCase()
+          .includes(query)
       );
     });
   }, [canteens, search]);
@@ -107,13 +122,16 @@ function CanteenHome() {
               </p>
             </div>
 
+            {/* MY ORDERS */}
             <button
               type="button"
-              onClick={() => navigate("/orders")}
-              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs font-medium text-white/70 transition hover:border-emerald-400/20 hover:text-white"
+              onClick={() => navigate("/my-orders")}
+              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs font-medium text-white/70 transition hover:border-emerald-400/20 hover:bg-emerald-400/[0.04] hover:text-white"
             >
               <ShoppingBag size={15} />
+
               My Orders
+
               <ArrowRight size={14} />
             </button>
           </div>
@@ -130,7 +148,9 @@ function CanteenHome() {
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
               placeholder="Search canteens or locations..."
               className="h-12 w-full rounded-xl border border-white/10 bg-[#0d1114] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/25 transition focus:border-emerald-400/30"
             />
@@ -180,7 +200,9 @@ function CanteenHome() {
 
               <button
                 type="button"
-                onClick={() => window.location.reload()}
+                onClick={() =>
+                  window.location.reload()
+                }
                 className="mt-4 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/70 transition hover:text-white"
               >
                 Try again
@@ -202,7 +224,8 @@ function CanteenHome() {
                 </h3>
 
                 <p className="mt-1 text-xs text-white/35">
-                  Try searching for another canteen or location.
+                  Try searching for another canteen or
+                  location.
                 </p>
               </div>
             )}
@@ -212,30 +235,34 @@ function CanteenHome() {
             !error &&
             openCanteens.length > 0 && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {openCanteens.map((canteen, index) => (
-                  <motion.div
-                    key={canteen._id}
-                    initial={{
-                      opacity: 0,
-                      y: 8,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    transition={{
-                      duration: 0.25,
-                      delay: index * 0.04,
-                    }}
-                  >
-                    <CanteenCard
-                      canteen={canteen}
-                      onClick={() =>
-                        handleCanteenClick(canteen)
-                      }
-                    />
-                  </motion.div>
-                ))}
+                {openCanteens.map(
+                  (canteen, index) => (
+                    <motion.div
+                      key={canteen._id}
+                      initial={{
+                        opacity: 0,
+                        y: 8,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        duration: 0.25,
+                        delay: index * 0.04,
+                      }}
+                    >
+                      <CanteenCard
+                        canteen={canteen}
+                        onClick={() =>
+                          handleCanteenClick(
+                            canteen
+                          )
+                        }
+                      />
+                    </motion.div>
+                  )
+                )}
               </div>
             )}
 
@@ -249,15 +276,19 @@ function CanteenHome() {
                 </h3>
 
                 <div className="grid grid-cols-1 gap-3 opacity-70 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {closedCanteens.map((canteen) => (
-                    <CanteenCard
-                      key={canteen._id}
-                      canteen={canteen}
-                      onClick={() =>
-                        handleCanteenClick(canteen)
-                      }
-                    />
-                  ))}
+                  {closedCanteens.map(
+                    (canteen) => (
+                      <CanteenCard
+                        key={canteen._id}
+                        canteen={canteen}
+                        onClick={() =>
+                          handleCanteenClick(
+                            canteen
+                          )
+                        }
+                      />
+                    )
+                  )}
                 </div>
               </div>
             )}
