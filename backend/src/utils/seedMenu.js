@@ -18,17 +18,17 @@ const seedMenu = async () => {
     const canteens = await Canteen.find({
       name: {
         $in: [
-          "Central Canteen",
-          "Food Court",
-          "Campus Cafe",
-          "Block C Canteen",
+          "Bite Box",
+          "CafeMonk",
+          "ChaiGaram",
+          "DosTea",
         ],
       },
     });
 
-    if (canteens.length === 0) {
+    if (canteens.length !== 4) {
       console.error(
-        "No demo canteens found. Run seedCanteens.js first."
+        "Expected 4 canteens. Run seedCanteens.js first."
       );
 
       await mongoose.connection.close();
@@ -41,6 +41,7 @@ const seedMenu = async () => {
       canteenMap[canteen.name] = canteen._id;
     });
 
+    // Remove existing menu items belonging to these demo canteens.
     await MenuItem.deleteMany({
       canteen: {
         $in: canteens.map((canteen) => canteen._id),
@@ -48,156 +49,184 @@ const seedMenu = async () => {
     });
 
     const menuItems = [
-      // Central Canteen
-      {
-        canteen: canteenMap["Central Canteen"],
-        name: "Veg Masala Dosa",
-        description: "Crispy dosa served with sambar and chutney.",
-        price: 70,
-        category: "Breakfast",
-        isAvailable: true,
-        preparationTime: 12,
-      },
-      {
-        canteen: canteenMap["Central Canteen"],
-        name: "Paneer Roll",
-        description: "Soft roll filled with spiced paneer and vegetables.",
-        price: 90,
-        category: "Quick Bites",
-        isAvailable: true,
-        preparationTime: 10,
-      },
-      {
-        canteen: canteenMap["Central Canteen"],
-        name: "Veg Thali",
-        description: "Complete homestyle meal with roti, rice and dal.",
-        price: 120,
-        category: "Meals",
-        isAvailable: true,
-        preparationTime: 15,
-      },
-      {
-        canteen: canteenMap["Central Canteen"],
-        name: "Masala Chai",
-        description: "Freshly brewed Indian masala tea.",
-        price: 25,
-        category: "Drinks",
-        isAvailable: true,
-        preparationTime: 5,
-      },
+      // ==========================================
+      // BITE BOX
+      // ==========================================
 
-      // Food Court
       {
-        canteen: canteenMap["Food Court"],
+        canteen: canteenMap["Bite Box"],
         name: "Veg Burger",
-        description: "Crispy veg patty with fresh vegetables and sauce.",
+        description:
+          "Crispy veg patty with fresh vegetables and sauce.",
         price: 80,
         category: "Burgers",
         isAvailable: true,
         preparationTime: 10,
       },
       {
-        canteen: canteenMap["Food Court"],
+        canteen: canteenMap["Bite Box"],
+        name: "Paneer Roll",
+        description:
+          "Soft roll filled with spiced paneer and vegetables.",
+        price: 90,
+        category: "Quick Bites",
+        isAvailable: true,
+        preparationTime: 10,
+      },
+      {
+        canteen: canteenMap["Bite Box"],
         name: "Cheese Sandwich",
-        description: "Toasted sandwich with cheese and vegetables.",
+        description:
+          "Toasted sandwich with cheese and fresh vegetables.",
         price: 65,
         category: "Quick Bites",
         isAvailable: true,
         preparationTime: 8,
       },
       {
-        canteen: canteenMap["Food Court"],
-        name: "Veg Noodles",
-        description: "Wok-tossed noodles with fresh vegetables.",
-        price: 90,
-        category: "Meals",
-        isAvailable: true,
-        preparationTime: 12,
-      },
-      {
-        canteen: canteenMap["Food Court"],
+        canteen: canteenMap["Bite Box"],
         name: "Cold Coffee",
-        description: "Chilled creamy coffee served cold.",
+        description:
+          "Chilled creamy coffee for a refreshing break.",
         price: 70,
         category: "Drinks",
         isAvailable: true,
         preparationTime: 5,
       },
 
-      // Campus Cafe
+      // ==========================================
+      // CAFEMONK
+      // ==========================================
+
       {
-        canteen: canteenMap["Campus Cafe"],
+        canteen: canteenMap["CafeMonk"],
         name: "Cappuccino",
-        description: "Rich espresso topped with steamed milk foam.",
+        description:
+          "Rich espresso topped with steamed milk foam.",
         price: 90,
         category: "Drinks",
         isAvailable: true,
         preparationTime: 6,
       },
       {
-        canteen: canteenMap["Campus Cafe"],
+        canteen: canteenMap["CafeMonk"],
+        name: "Cafe Latte",
+        description:
+          "Smooth espresso with creamy steamed milk.",
+        price: 95,
+        category: "Drinks",
+        isAvailable: true,
+        preparationTime: 6,
+      },
+      {
+        canteen: canteenMap["CafeMonk"],
         name: "Veg Grilled Sandwich",
-        description: "Grilled sandwich packed with vegetables and cheese.",
+        description:
+          "Grilled sandwich packed with vegetables and cheese.",
         price: 85,
         category: "Quick Bites",
         isAvailable: true,
         preparationTime: 8,
       },
       {
-        canteen: canteenMap["Campus Cafe"],
-        name: "French Fries",
-        description: "Crispy golden fries with seasoning.",
-        price: 60,
-        category: "Quick Bites",
-        isAvailable: true,
-        preparationTime: 7,
-      },
-      {
-        canteen: canteenMap["Campus Cafe"],
+        canteen: canteenMap["CafeMonk"],
         name: "Chocolate Muffin",
-        description: "Soft chocolate muffin for a quick sweet bite.",
+        description:
+          "Soft chocolate muffin for a quick sweet bite.",
         price: 55,
         category: "Desserts",
         isAvailable: true,
         preparationTime: 3,
       },
 
-      // Block C Canteen
+      // ==========================================
+      // CHAIGARAM
+      // ==========================================
+
       {
-        canteen: canteenMap["Block C Canteen"],
-        name: "Aloo Paratha",
-        description: "Stuffed potato paratha served with curd.",
-        price: 60,
-        category: "Breakfast",
+        canteen: canteenMap["ChaiGaram"],
+        name: "Masala Chai",
+        description:
+          "Freshly brewed Indian masala tea.",
+        price: 25,
+        category: "Chai",
         isAvailable: true,
-        preparationTime: 12,
+        preparationTime: 5,
       },
       {
-        canteen: canteenMap["Block C Canteen"],
-        name: "Chole Rice",
-        description: "Spiced chickpeas served with steamed rice.",
-        price: 85,
-        category: "Meals",
+        canteen: canteenMap["ChaiGaram"],
+        name: "Ginger Chai",
+        description:
+          "Hot tea infused with fresh ginger.",
+        price: 30,
+        category: "Chai",
         isAvailable: true,
-        preparationTime: 15,
+        preparationTime: 5,
       },
       {
-        canteen: canteenMap["Block C Canteen"],
+        canteen: canteenMap["ChaiGaram"],
         name: "Samosa",
-        description: "Crispy pastry filled with spiced potatoes.",
+        description:
+          "Crispy pastry filled with spiced potatoes.",
         price: 20,
         category: "Snacks",
         isAvailable: true,
         preparationTime: 5,
       },
       {
-        canteen: canteenMap["Block C Canteen"],
-        name: "Lemon Water",
-        description: "Refreshing chilled lemon drink.",
-        price: 25,
+        canteen: canteenMap["ChaiGaram"],
+        name: "Aloo Samosa Chaat",
+        description:
+          "Samosa topped with chutneys and Indian spices.",
+        price: 50,
+        category: "Snacks",
+        isAvailable: true,
+        preparationTime: 7,
+      },
+
+      // ==========================================
+      // DOSTEA
+      // ==========================================
+
+      {
+        canteen: canteenMap["DosTea"],
+        name: "Masala Dosa",
+        description:
+          "Crispy dosa with spiced potato filling, sambar and chutney.",
+        price: 70,
+        category: "Dosa",
+        isAvailable: true,
+        preparationTime: 12,
+      },
+      {
+        canteen: canteenMap["DosTea"],
+        name: "Paneer Dosa",
+        description:
+          "Crispy dosa filled with spiced paneer and vegetables.",
+        price: 95,
+        category: "Dosa",
+        isAvailable: true,
+        preparationTime: 14,
+      },
+      {
+        canteen: canteenMap["DosTea"],
+        name: "Idli Sambar",
+        description:
+          "Soft steamed idlis served with hot sambar.",
+        price: 55,
+        category: "South Indian",
+        isAvailable: true,
+        preparationTime: 8,
+      },
+      {
+        canteen: canteenMap["DosTea"],
+        name: "Filter Coffee",
+        description:
+          "Traditional South Indian filter coffee.",
+        price: 40,
         category: "Drinks",
         isAvailable: true,
-        preparationTime: 3,
+        preparationTime: 5,
       },
     ];
 

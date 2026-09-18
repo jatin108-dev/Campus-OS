@@ -27,69 +27,79 @@ const seedCanteens = async () => {
       process.exit(1);
     }
 
-    // Remove previously seeded demo canteens
+    // Remove old demo canteens and the new seeded names.
+    // This prevents duplicate demo data when the seed is run again.
     await Canteen.deleteMany({
       name: {
         $in: [
+          // Previous names
           "Central Canteen",
           "Food Court",
           "Campus Cafe",
           "Block C Canteen",
+
+          // Current names
+          "Bite Box",
+          "CafeMonk",
+          "ChaiGaram",
+          "DosTea",
         ],
       },
     });
 
     const canteens = await Canteen.insertMany([
       {
-        name: "Central Canteen",
+        name: "Bite Box",
         description:
-          "Everyday meals, snacks and refreshing drinks for students.",
-        location: "Main Block • Ground Floor",
+          "Quick meals, snacks and refreshing drinks for students.",
+        location: "Near Parking",
         owner: owner._id,
         isOpen: true,
         preparationTime: 15,
       },
       {
-        name: "Food Court",
-        description:
-          "Quick meals, combos and popular campus favourites.",
-        location: "Block B • Ground Floor",
-        owner: owner._id,
-        isOpen: true,
-        preparationTime: 12,
-      },
-      {
-        name: "Campus Cafe",
+        name: "CafeMonk",
         description:
           "Coffee, sandwiches, snacks and quick bites between classes.",
-        location: "Academic Block • First Floor",
+        location: "Near Boys Hostel",
         owner: owner._id,
         isOpen: true,
         preparationTime: 10,
       },
       {
-        name: "Block C Canteen",
+        name: "ChaiGaram",
         description:
-          "Affordable meals and snacks for students around Block C.",
-        location: "Block C • Ground Floor",
+          "Fresh chai, hot snacks and affordable campus favourites.",
+        location: "Near Temple",
         owner: owner._id,
-        isOpen: false,
-        preparationTime: 20,
+        isOpen: true,
+        preparationTime: 8,
+      },
+      {
+        name: "DosTea",
+        description:
+          "Dosas, tea and quick South Indian bites near the main ground.",
+        location: "Near Main Ground",
+        owner: owner._id,
+        isOpen: true,
+        preparationTime: 12,
       },
     ]);
 
     console.log(`Created ${canteens.length} canteens`);
 
     canteens.forEach((canteen) => {
-      console.log(`✓ ${canteen.name}`);
+      console.log(
+        `✓ ${canteen.name} — ${canteen.location}`
+      );
     });
 
     await mongoose.connection.close();
 
-    console.log("Seed completed successfully");
+    console.log("Canteen seed completed successfully");
     process.exit(0);
   } catch (error) {
-    console.error("Seed failed:", error.message);
+    console.error("Canteen seed failed:", error.message);
 
     await mongoose.connection.close();
     process.exit(1);
