@@ -11,6 +11,10 @@ import Checkout from "../pages/canteen/Checkout";
 import OrderSuccess from "../pages/canteen/OrderSuccess";
 import MyOrders from "../pages/canteen/MyOrders";
 import OrderTracking from "../pages/canteen/OrderTracking";
+import MerchantDashboard from "../pages/merchant/MerchantDashboard";
+import MerchantOrders from "../pages/merchant/MerchantOrders";
+import MerchantMenu from "../pages/merchant/MerchantMenu";
+import MerchantSettings from "../pages/merchant/MerchantSettings";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +38,11 @@ const AppRoutes = () => {
         path="/order-tracking/:orderId"
         element={<OrderTracking />}
       />
+
+      <Route path="/merchant" element={<MerchantDashboard />} />
+      <Route path="/merchant/orders" element={<MerchantOrders />} />
+      <Route path="/merchant/menu" element={<MerchantMenu />} />
+      <Route path="/merchant/settings" element={<MerchantSettings />} />
     </Routes>
   );
 };
