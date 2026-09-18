@@ -9,9 +9,7 @@ const orderRoutes = require("./routes/order/orderRoutes");
 
 const app = express();
 
-// ================================
 // CORS
-// ================================
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -22,7 +20,6 @@ app.use(
   cors({
     origin: function (origin, callback) {
       // Allow requests without an origin
-      // such as Postman/server-to-server requests
       if (!origin) {
         return callback(null, true);
       }
@@ -37,18 +34,13 @@ app.use(
   })
 );
 
-// ================================
 // BODY & COOKIE MIDDLEWARE
-// ================================
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ================================
-// TEST ROUTE
-// ================================
 
+// TEST ROUTE
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -56,22 +48,14 @@ app.get("/", (req, res) => {
   });
 });
 
-// ================================
 // AUTH ROUTES
-// ================================
-
 app.use("/api/auth", authRoutes);
 
-// ================================
 // CANTEEN ROUTES
-// ================================
-
 app.use("/api/canteens", canteenRoutes);
 
-// ================================
-// MENU ROUTES
-// ================================
 
+// MENU ROUTES
 app.use("/api/menu", menuRoutes);
 
 // ================================
@@ -80,10 +64,8 @@ app.use("/api/menu", menuRoutes);
 
 app.use("/api/orders", orderRoutes);
 
-// ================================
-// 404 HANDLER
-// ================================
 
+// 404 HANDLER
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -91,10 +73,7 @@ app.use((req, res) => {
   });
 });
 
-// ================================
 // ERROR HANDLER
-// ================================
-
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
 
