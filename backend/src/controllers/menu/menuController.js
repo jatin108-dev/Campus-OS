@@ -206,9 +206,58 @@ const deleteMenuItem = async (req, res) => {
   }
 };
 
+const getMerchantMenu = async (req, res) => {
+  try {
+    let canteens;
+
+    if (req.user.role === "admin") {
+      canteens = await Canteen.find({}).select(
+        "_id name location owner isOpen"
+      );
+    } else {
+      canteens = await Canteen.find({
+        owner: req.user._id,
+      }).select("_id name location owner isOpen");
+    }
+
+    if (!canteens.length) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        canteens: [],
+        menuItems: [],
+      });
+    }
+
+    const canteenIds = canteens.map((canteen) => canteen._id);
+
+    const menuItems = await MenuItem.find({
+      canteen: { $in: canteenIds },
+    }).sort({
+      category: 1,
+      createdAt: -1,
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: menuItems.length,
+      canteens,
+      menuItems,
+    });
+  } catch (error) {
+    console.error("Get merchant menu error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch merchant menu",
+    });
+  }
+};
+
 module.exports = {
   getMenuByCanteen,
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
+  getMerchantMenu
 };

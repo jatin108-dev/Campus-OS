@@ -2,6 +2,7 @@ const express = require("express");
 
 const {
   getMenuByCanteen,
+  getMerchantMenu,
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
@@ -11,10 +12,18 @@ const { protect, authorize } = require("../../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Public
+// Public menu
 router.get("/:canteenId", getMenuByCanteen);
 
-// Vendor/Admin
+// Vendor/Admin menu
+// IMPORTANT: keep this BEFORE /:canteenId
+router.get(
+  "/merchant",
+  protect,
+  authorize("vendor", "admin"),
+  getMerchantMenu
+);
+
 router.post(
   "/",
   protect,
