@@ -1,55 +1,26 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Check,
   Clock3,
   MapPin,
-  PackageCheck,
   RefreshCw,
+  ShoppingBag,
   Store,
-  Utensils,
-  XCircle,
+  UtensilsCrossed,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-const STATUS_STEPS = [
-  {
-    key: "PLACED",
-    title: "Order Placed",
-    description: "Your order has been received",
-  },
-  {
-    key: "CONFIRMED",
-    title: "Confirmed",
-    description: "The canteen has confirmed your order",
-  },
-  {
-    key: "PREPARING",
-    title: "Preparing",
-    description: "Your food is being prepared",
-  },
-  {
-    key: "READY",
-    title: "Ready for Pickup",
-    description: "Your order is ready at the counter",
-  },
-  {
-    key: "COMPLETED",
-    title: "Completed",
-    description: "Order picked up successfully",
-  },
+const statusSteps = [
+  { key: "PLACED", label: "Placed" },
+  { key: "CONFIRMED", label: "Confirmed" },
+  { key: "PREPARING", label: "Preparing" },
+  { key: "READY", label: "Ready" },
+  { key: "COMPLETED", label: "Picked Up" },
 ];
-
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(amount || 0));
-};
 
 const formatDate = (value) => {
   if (!value) return "—";
@@ -70,7 +41,7 @@ const formatTime = (value) => {
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return value;
 
   return date.toLocaleTimeString("en-IN", {
     hour: "numeric",
@@ -78,146 +49,17 @@ const formatTime = (value) => {
   });
 };
 
-const formatPickupTime = (value) => {
-  if (!value) return "—";
-
-  const match = String(value).match(/^(\d{1,2}):(\d{2})$/);
-
-  if (!match) return String(value);
-
-  let hours = Number(match[1]);
-  const minutes = match[2];
-
-  const period = hours >= 12 ? "PM" : "AM";
-
-  hours = hours % 12 || 12;
-
-  return `${hours}:${minutes} ${period}`;
-};
-
 const getStatusIndex = (status) => {
-  return STATUS_STEPS.findIndex((step) => step.key === status);
+  const index = statusSteps.findIndex(
+    (step) => step.key === status
+  );
+
+  return index === -1 ? 0 : index;
 };
 
-function ProgressTimeline({ status }) {
-  const currentIndex = getStatusIndex(status);
-
-  if (status === "CANCELLED") {
-    return (
-      <div className="rounded-3xl border border-red-400/15 bg-red-400/[0.05] p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-400/10">
-            <XCircle size={22} className="text-red-400" />
-          </div>
-
-          <div>
-            <h3 className="font-bold text-white">
-              Order Cancelled
-            </h3>
-
-            <p className="mt-1 text-sm leading-6 text-zinc-500">
-              This order has been cancelled and will not be
-              prepared.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-3xl border border-white/[0.08] bg-[#101416] p-5 sm:p-7">
-      <div className="mb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-600">
-          Order Progress
-        </p>
-
-        <h2 className="mt-2 text-xl font-bold text-white">
-          Track your order
-        </h2>
-      </div>
-
-      <div className="relative">
-        {STATUS_STEPS.map((step, index) => {
-          const isCompleted = index < currentIndex;
-          const isCurrent = index === currentIndex;
-
-          return (
-            <div
-              key={step.key}
-              className="relative flex gap-4 pb-7 last:pb-0"
-            >
-              {index < STATUS_STEPS.length - 1 && (
-                <div
-                  className={`absolute left-[17px] top-9 h-[calc(100%-8px)] w-px ${
-                    index < currentIndex
-                      ? "bg-emerald-400/50"
-                      : "bg-white/[0.08]"
-                  }`}
-                />
-              )}
-
-              <div
-                className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${
-                  isCompleted
-                    ? "border-emerald-400/30 bg-emerald-400/10"
-                    : isCurrent
-                    ? "border-white/20 bg-white text-[#090c0d]"
-                    : "border-white/[0.08] bg-white/[0.04] text-zinc-600"
-                }`}
-              >
-                {isCompleted ? (
-                  <Check size={16} strokeWidth={2.5} />
-                ) : (
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      isCurrent
-                        ? "bg-[#090c0d]"
-                        : "bg-zinc-700"
-                    }`}
-                  />
-                )}
-              </div>
-
-              <div className="pt-0.5">
-                <p
-                  className={`text-sm font-bold ${
-                    isCurrent || isCompleted
-                      ? "text-white"
-                      : "text-zinc-600"
-                  }`}
-                >
-                  {step.title}
-                </p>
-
-                <p
-                  className={`mt-1 text-xs leading-5 ${
-                    isCurrent
-                      ? "text-zinc-400"
-                      : "text-zinc-600"
-                  }`}
-                >
-                  {step.description}
-                </p>
-
-                {isCurrent && (
-                  <span className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                    Current status
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function OrderTracking() {
-  const { orderId } = useParams();
+const OrderTracking = () => {
   const navigate = useNavigate();
+  const { orderId } = useParams();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -226,12 +68,6 @@ function OrderTracking() {
 
   const fetchOrder = useCallback(
     async (isRefresh = false) => {
-      if (!orderId) {
-        setError("Order ID is missing.");
-        setLoading(false);
-        return;
-      }
-
       try {
         if (isRefresh) {
           setRefreshing(true);
@@ -246,40 +82,23 @@ function OrderTracking() {
           {
             method: "GET",
             credentials: "include",
-            headers: {
-              Accept: "application/json",
-            },
           }
         );
 
-        let data = {};
-
-        try {
-          data = await response.json();
-        } catch {
-          data = {};
-        }
+        const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.message ||
-              `Unable to load order (${response.status})`
+            data.message || "Failed to load order"
           );
         }
 
-        const fetchedOrder =
-          data.order || data.data || data;
-
-        setOrder(fetchedOrder);
+        setOrder(data.order || data.data || null);
       } catch (err) {
-        console.error(
-          "Order tracking fetch error:",
-          err
-        );
+        console.error("Order tracking error:", err);
 
         setError(
-          err.message ||
-            "Unable to load order details."
+          err.message || "Unable to load your order"
         );
       } finally {
         setLoading(false);
@@ -293,310 +112,592 @@ function OrderTracking() {
     fetchOrder();
   }, [fetchOrder]);
 
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : [];
+
+  const currentStatusIndex = useMemo(
+    () => getStatusIndex(order?.orderStatus),
+    [order?.orderStatus]
+  );
+
+  const isCancelled =
+    order?.orderStatus === "CANCELLED";
+
+  const canteenName =
+    order?.canteen?.name || "Campus Canteen";
+
+  const canteenLocation =
+    order?.canteen?.location || "GNIOT Campus";
+
+  const subtotal = items.reduce(
+    (total, item) =>
+      total +
+      Number(item.price || 0) *
+        Number(item.quantity || 0),
+    0
+  );
+
+  const totalAmount = Number(
+    order?.totalAmount ?? subtotal
+  );
+
+  const pickupDate =
+    order?.pickupAt || order?.createdAt;
+
+  const pickupTime =
+    order?.pickupTime ||
+    formatTime(order?.pickupAt);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080b0d] text-white">
-        <main className="mx-auto max-w-5xl px-5 py-8 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-4 w-24 rounded bg-white/[0.06]" />
-
-            <div className="mt-8 h-10 w-64 rounded bg-white/[0.07]" />
-
-            <div className="mt-3 h-4 w-80 max-w-full rounded bg-white/[0.05]" />
-
-            <div className="mt-8 h-44 rounded-3xl bg-white/[0.04]" />
-
-            <div className="mt-5 h-96 rounded-3xl bg-white/[0.04]" />
-          </div>
-        </main>
+      <div className="flex min-h-screen items-center justify-center bg-[#060809] text-white">
+        <div className="flex items-center gap-3 text-sm text-white/35">
+          <RefreshCw
+            size={15}
+            className="animate-spin text-emerald-400"
+          />
+          Loading order...
+        </div>
       </div>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-[#080b0d] text-white">
-        <main className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-5">
-          <div className="w-full max-w-md rounded-3xl border border-white/[0.08] bg-[#101416] p-8 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/10 bg-red-400/[0.06]">
-              <XCircle
-                size={25}
-                className="text-red-400"
-              />
-            </div>
-
-            <h1 className="mt-5 text-xl font-bold text-white">
-              Couldn't load this order
-            </h1>
-
-            <p className="mt-2 text-sm leading-6 text-zinc-500">
-              {error || "Order details are unavailable."}
-            </p>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <button
-                type="button"
-                onClick={() => fetchOrder(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#090c0d]"
-              >
-                <RefreshCw size={16} />
-                Try Again
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate("/my-orders")}
-                className="rounded-xl border border-white/[0.08] px-4 py-3 text-sm font-semibold text-zinc-300"
-              >
-                My Orders
-              </button>
-            </div>
+      <div className="flex min-h-screen items-center justify-center bg-[#060809] px-6 text-white">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
+            <ShoppingBag
+              size={18}
+              className="text-white/35"
+            />
           </div>
-        </main>
+
+          <h1 className="mt-5 text-lg font-semibold">
+            Couldn't load this order
+          </h1>
+
+          <p className="mt-2 text-xs text-white/30">
+            {error || "Order information is unavailable."}
+          </p>
+
+          <div className="mt-5 flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/my-orders")}
+              className="rounded-xl border border-white/10 px-4 py-2.5 text-xs text-white/50 hover:text-white"
+            >
+              My Orders
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fetchOrder()}
+              className="rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-semibold text-black hover:bg-emerald-300"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const canteenName =
-    order.canteen?.name || "Campus Canteen";
-
-  const canteenLocation =
-    order.canteen?.location || "Campus";
-
-  const itemCount = (order.items || []).reduce(
-    (total, item) =>
-      total + Number(item.quantity || 0),
-    0
-  );
-
   return (
-    <div className="min-h-screen bg-[#080b0d] text-white">
-      <main className="mx-auto max-w-5xl px-5 py-7 sm:px-6 lg:px-8 lg:py-9">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <button
-              type="button"
-              onClick={() => navigate("/my-orders")}
-              className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 transition hover:text-white"
-            >
-              <ArrowLeft size={16} />
-              My Orders
-            </button>
+    <div className="relative min-h-screen overflow-hidden bg-[#060809] text-white">
 
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
-              Order Tracking
-            </p>
+      {/* =====================================================
+          AMBIENT LIGHT
+      ===================================================== */}
 
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Your order
-            </h1>
+      <div className="pointer-events-none absolute -left-40 top-[30%] h-96 w-96 rounded-full bg-emerald-500/[0.025] blur-[100px]" />
 
-            <p className="mt-2 text-sm text-zinc-500">
-              Track your canteen order in real time.
-            </p>
-          </div>
+      <div className="pointer-events-none absolute left-[25%] top-[42%] h-72 w-72 rounded-full bg-[#c9a95b]/[0.035] blur-[110px]" />
+
+      <div className="pointer-events-none absolute right-[-120px] bottom-[-100px] h-80 w-80 rounded-full bg-emerald-500/[0.02] blur-[100px]" />
+
+      {/* =====================================================
+          SUBTLE GRID
+      ===================================================== */}
+
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      <main className="relative mx-auto flex min-h-screen w-full max-w-[1380px] flex-col px-6 py-5 sm:px-8 lg:px-10 lg:py-6">
+
+        {/* ===================================================
+            TOP BAR
+        =================================================== */}
+
+        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] pb-4">
+          <button
+            type="button"
+            onClick={() => navigate("/my-orders")}
+            className="group flex items-center gap-2.5 text-xs font-medium text-white/40 transition hover:text-white"
+          >
+            <ArrowLeft
+              size={15}
+              className="transition-transform group-hover:-translate-x-1"
+            />
+            My Orders
+          </button>
 
           <button
             type="button"
             onClick={() => fetchOrder(true)}
             disabled={refreshing}
-            className="mt-8 inline-flex items-center gap-2 rounded-xl border border-white/[0.09] bg-white/[0.035] px-3.5 py-2.5 text-sm font-semibold text-zinc-300 transition hover:bg-white/[0.06] disabled:opacity-50"
+            className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] text-white/30 transition hover:bg-white/[0.03] hover:text-white disabled:opacity-40"
           >
             <RefreshCw
-              size={16}
-              className={refreshing ? "animate-spin" : ""}
+              size={13}
+              className={
+                refreshing
+                  ? "animate-spin"
+                  : "transition-transform group-hover:rotate-45"
+              }
             />
-            <span className="hidden sm:inline">
-              {refreshing ? "Refreshing..." : "Refresh"}
-            </span>
+            Refresh
           </button>
+        </header>
+
+        {/* ===================================================
+            HEADING
+        =================================================== */}
+
+        <div className="shrink-0 py-6 lg:py-5">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-emerald-400/65">
+                Order Tracking
+              </p>
+
+              <h1 className="mt-1.5 text-3xl font-bold tracking-[-0.045em] sm:text-[2.35rem]">
+                Your{" "}
+                <span className="text-white/30">
+                  order
+                </span>
+              </h1>
+
+              <p className="mt-1 text-xs text-white/30">
+                Track your campus order in real time.
+              </p>
+            </div>
+
+            <div className="hidden text-right sm:block">
+              <p className="text-[8px] uppercase tracking-[0.18em] text-white/20">
+                Ordered
+              </p>
+
+              <p className="mt-1 text-xs text-white/45">
+                {formatDate(order.createdAt)}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Token Hero */}
-        <section className="mt-8 overflow-hidden rounded-3xl border border-white/[0.08] bg-[#101416]">
-          <div className="grid lg:grid-cols-[1fr_auto]">
-            <div className="p-6 sm:p-8">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]">
+        {/* ===================================================
+            MAIN CONTENT
+        =================================================== */}
+
+        <div className="grid flex-1 grid-cols-1 gap-8 lg:min-h-0 lg:grid-cols-[1fr_350px] lg:gap-12">
+
+          {/* =================================================
+              LEFT SIDE
+          ================================================= */}
+
+          <section className="flex min-h-0 flex-col">
+
+            {/* CANTEEN */}
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+              <div className="flex items-center gap-3.5">
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/10 bg-emerald-400/[0.055] text-emerald-400">
+                  <div className="absolute inset-0 rounded-xl bg-emerald-400/[0.06] blur-md" />
                   <Store
-                    size={20}
-                    className="text-zinc-300"
+                    size={17}
+                    className="relative"
                   />
                 </div>
 
                 <div>
-                  <h2 className="font-bold text-white">
+                  <h2 className="text-sm font-semibold text-white/85">
                     {canteenName}
                   </h2>
 
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-zinc-500">
-                    <MapPin size={13} />
+                  <p className="mt-0.5 flex items-center gap-1 text-[10px] text-white/30">
+                    <MapPin size={10} />
                     {canteenLocation}
-                  </div>
+                  </p>
                 </div>
               </div>
 
-              <div className="mt-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
-                  Pickup Token
-                </p>
-
-                <div className="mt-2 flex flex-wrap items-center gap-4">
-                  <span className="font-mono text-5xl font-black tracking-tight text-white sm:text-6xl">
-                    {order.tokenNumber || "—"}
-                  </span>
-
-                  <span
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                      order.orderStatus === "COMPLETED"
-                        ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
-                        : order.orderStatus === "CANCELLED"
-                        ? "border-red-400/20 bg-red-400/10 text-red-300"
-                        : order.orderStatus === "READY"
-                        ? "border-amber-400/20 bg-amber-400/10 text-amber-300"
-                        : "border-white/10 bg-white/[0.05] text-zinc-300"
-                    }`}
-                  >
-                    {order.orderStatus || "PLACED"}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-sm text-zinc-500">
-                  Show this token at the canteen counter
-                  when your order is ready.
-                </p>
-              </div>
-            </div>
-
-            <div className="border-t border-white/[0.07] bg-white/[0.025] p-6 lg:flex lg:min-w-[220px] lg:flex-col lg:justify-center lg:border-l lg:border-t-0">
-              <div className="flex items-center gap-2 text-zinc-500">
-                <Clock3 size={16} />
-                <span className="text-xs font-medium">
-                  Pickup Time
-                </span>
-              </div>
-
-              <p className="mt-2 text-2xl font-bold text-white">
-                {order.pickupTime
-                  ? formatPickupTime(order.pickupTime)
-                  : formatTime(order.pickupAt)}
-              </p>
-
-              {order.pickupAt && (
-                <p className="mt-1 text-xs text-zinc-600">
-                  {formatDate(order.pickupAt)}
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Main Content */}
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-          <ProgressTimeline
-            status={order.orderStatus}
-          />
-
-          {/* Order Summary */}
-          <section className="rounded-3xl border border-white/[0.08] bg-[#101416] p-5 sm:p-7">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-600">
-                  Summary
-                </p>
-
-                <h2 className="mt-2 text-xl font-bold text-white">
-                  Order Details
-                </h2>
-              </div>
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04]">
-                <Utensils
-                  size={18}
-                  className="text-zinc-500"
+              <div
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.14em] ${
+                  isCancelled
+                    ? "border-red-400/10 bg-red-400/[0.035] text-red-300/65"
+                    : "border-emerald-400/15 bg-emerald-400/[0.045] text-emerald-400"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isCancelled
+                      ? "bg-red-400"
+                      : "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]"
+                  }`}
                 />
+
+                {isCancelled
+                  ? "Cancelled"
+                  : "Active"}
               </div>
             </div>
 
-            <div className="mt-6 space-y-2.5">
-              {(order.items || []).map(
-                (item, index) => (
-                  <div
-                    key={
-                      item.menuItem ||
-                      `${item.name}-${index}`
-                    }
-                    className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.05] bg-white/[0.025] px-3.5 py-3"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex h-7 min-w-7 items-center justify-center rounded-lg bg-white/[0.06] px-1.5 text-xs font-bold text-zinc-400">
-                        {item.quantity}×
-                      </span>
+            {/* =================================================
+                TOKEN AREA
+            ================================================= */}
 
-                      <span className="truncate text-sm text-zinc-300">
-                        {item.name}
-                      </span>
-                    </div>
+            <div className="relative py-7">
 
-                    <span className="shrink-0 text-sm font-medium text-zinc-400">
-                      {formatCurrency(
-                        Number(item.price || 0) *
-                          Number(item.quantity || 0)
-                      )}
+              {/* Gold ambient glow behind token */}
+              <div className="pointer-events-none absolute left-0 top-1/2 h-24 w-72 -translate-y-1/2 rounded-full bg-[#c9a95b]/[0.035] blur-3xl" />
+
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#c9a95b]/70">
+                    Pickup Token
+                  </p>
+
+                  <div className="mt-1.5 flex items-center gap-3">
+                    <span className="font-mono text-[3.1rem] font-bold leading-none tracking-[-0.075em] text-[#d5b765] drop-shadow-[0_0_18px_rgba(201,169,91,0.12)] sm:text-[3.45rem]">
+                      {order.tokenNumber || "—"}
+                    </span>
+
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] ${
+                        isCancelled
+                          ? "border border-red-400/10 bg-red-400/[0.035] text-red-300/60"
+                          : "border border-emerald-400/15 bg-emerald-400/[0.045] text-emerald-400"
+                      }`}
+                    >
+                      {order.orderStatus}
                     </span>
                   </div>
-                )
-              )}
-            </div>
 
-            <div className="mt-5 space-y-3 border-t border-white/[0.07] pt-5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-zinc-500">
-                  Items
-                </span>
+                  <p className="mt-2 max-w-md text-[11px] leading-5 text-white/25">
+                    Show this token at the counter when your
+                    order is ready.
+                  </p>
+                </div>
 
-                <span className="text-zinc-300">
-                  {itemCount}
-                </span>
+                {/* Pickup info */}
+                <div className="hidden items-center gap-6 sm:flex">
+                  <div>
+                    <p className="text-[8px] uppercase tracking-[0.17em] text-white/20">
+                      Pickup
+                    </p>
+
+                    <p className="mt-1 text-sm font-semibold text-white/65">
+                      {pickupTime}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-[8px] uppercase tracking-[0.17em] text-white/20">
+                      Date
+                    </p>
+
+                    <p className="mt-1 text-xs text-white/45">
+                      {formatDate(pickupDate)}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-500">
-                  Total
-                </span>
+              {/* Mobile pickup */}
+              <div className="mt-5 flex gap-7 sm:hidden">
+                <div>
+                  <p className="text-[8px] uppercase tracking-[0.16em] text-white/20">
+                    Pickup
+                  </p>
 
-                <span className="text-lg font-bold text-white">
-                  {formatCurrency(order.totalAmount)}
-                </span>
+                  <p className="mt-1 text-xs font-semibold text-white/60">
+                    {pickupTime}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[8px] uppercase tracking-[0.16em] text-white/20">
+                    Date
+                  </p>
+
+                  <p className="mt-1 text-xs text-white/45">
+                    {formatDate(pickupDate)}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {order.note && (
-              <div className="mt-5 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-600">
-                  Note
-                </p>
+            {/* =================================================
+                PROGRESS
+            ================================================= */}
 
-                <p className="mt-2 text-sm leading-6 text-zinc-400">
-                  {order.note}
-                </p>
+            {!isCancelled && (
+              <div className="flex flex-1 flex-col justify-center border-t border-white/[0.06] py-7 lg:py-8">
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-white/25">
+                      Order Progress
+                    </p>
+
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="text-lg font-semibold text-white/85">
+                        {statusSteps[currentStatusIndex]?.label}
+                      </span>
+
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+                    </div>
+                  </div>
+
+                  <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-emerald-400/50">
+                    Live
+                  </span>
+                </div>
+
+                {/* Timeline */}
+                <div className="mt-9 flex items-start">
+                  {statusSteps.map((step, index) => {
+                    const completed =
+                      index <= currentStatusIndex;
+
+                    const active =
+                      index === currentStatusIndex;
+
+                    return (
+                      <div
+                        key={step.key}
+                        className="flex flex-1 items-start"
+                      >
+                        <div className="flex min-w-0 flex-col items-center">
+                          <div
+                            className={`relative flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 ${
+                              completed
+                                ? "border-emerald-400/30 bg-emerald-400/[0.065] text-emerald-400"
+                                : "border-white/10 bg-white/[0.02] text-white/15"
+                            } ${
+                              active
+                                ? "shadow-[0_0_22px_rgba(52,211,153,0.12)] ring-4 ring-emerald-400/[0.035]"
+                                : ""
+                            }`}
+                          >
+                            {active && (
+                              <span className="absolute inset-[-5px] rounded-full border border-emerald-400/10 animate-pulse" />
+                            )}
+
+                            {completed ? (
+                              <Check
+                                size={15}
+                                strokeWidth={2.5}
+                              />
+                            ) : (
+                              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                            )}
+                          </div>
+
+                          <span
+                            className={`mt-3 whitespace-nowrap text-[9px] ${
+                              active
+                                ? "font-semibold text-emerald-400"
+                                : completed
+                                  ? "font-medium text-white/50"
+                                  : "text-white/20"
+                            }`}
+                          >
+                            {step.label}
+                          </span>
+                        </div>
+
+                        {index <
+                          statusSteps.length - 1 && (
+                          <div className="relative mt-5 h-px flex-1 bg-white/[0.07]">
+                            <div
+                              className={`absolute left-0 top-0 h-px transition-all duration-500 ${
+                                index <
+                                currentStatusIndex
+                                  ? "w-full bg-emerald-400/35"
+                                  : "w-0"
+                              }`}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Status helper */}
+                <div className="mt-9 flex items-center gap-2 text-[10px] text-white/20">
+                  <Clock3
+                    size={12}
+                    className="text-emerald-400/45"
+                  />
+
+                  We'll notify you when your order is ready.
+                </div>
               </div>
             )}
 
-            <div className="mt-5 flex items-center gap-2 text-xs text-zinc-600">
-              <PackageCheck size={14} />
-
-              <span>
-                Ordered {formatDate(order.createdAt)} at{" "}
-                {formatTime(order.createdAt)}
-              </span>
-            </div>
+            {isCancelled && (
+              <div className="flex flex-1 items-center border-t border-white/[0.06]">
+                <p className="text-xs text-red-300/55">
+                  This order has been cancelled.
+                </p>
+              </div>
+            )}
           </section>
+
+          {/* =================================================
+              RIGHT — SUMMARY
+          ================================================= */}
+
+          <aside className="flex min-h-0 flex-col border-t border-white/[0.06] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/20">
+                  Summary
+                </p>
+
+                <h2 className="mt-1 text-base font-semibold text-white/80">
+                  What you ordered
+                </h2>
+              </div>
+
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.025] text-white/25">
+                <ShoppingBag size={15} />
+              </div>
+            </div>
+
+            {/* Items */}
+            <div className="mt-6">
+              {items.length === 0 ? (
+                <p className="text-xs text-white/25">
+                  No items found.
+                </p>
+              ) : (
+                <div>
+                  {items.map((item, index) => {
+                    const itemTotal =
+                      Number(item.price || 0) *
+                      Number(item.quantity || 0);
+
+                    return (
+                      <div
+                        key={`${item.menuItem || item.name}-${index}`}
+                        className="group flex items-center justify-between gap-4 border-b border-white/[0.045] py-3.5 first:pt-0"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.025] text-white/20 transition group-hover:bg-emerald-400/[0.04] group-hover:text-emerald-400/60">
+                            <UtensilsCrossed size={13} />
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-medium text-white/65">
+                              {item.name}
+                            </p>
+
+                            <p className="mt-0.5 text-[9px] text-white/20">
+                              {item.quantity} × ₹
+                              {Number(
+                                item.price || 0
+                              ).toFixed(0)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="shrink-0 text-xs font-medium text-white/45">
+                          ₹{itemTotal.toFixed(0)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Total */}
+            <div className="mt-auto pt-7">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-white/25">
+                  Items total
+                </span>
+
+                <span className="text-xs text-white/40">
+                  ₹{subtotal.toFixed(0)}
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-end justify-between border-t border-white/[0.055] pt-4">
+                <div>
+                  <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-white/20">
+                    Total Paid
+                  </p>
+
+                  <p className="mt-1 text-[10px] text-emerald-400/60">
+                    {order.paymentStatus === "PAID"
+                      ? "UPI · Payment successful"
+                      : order.paymentMethod || "UPI"}
+                  </p>
+                </div>
+
+                <span className="text-2xl font-bold tracking-tight text-[#d0b15f] drop-shadow-[0_0_12px_rgba(201,169,91,0.1)]">
+                  ₹{totalAmount.toFixed(0)}
+                </span>
+              </div>
+            </div>
+
+            {/* Token reminder */}
+            <div className="mt-6 border-t border-white/[0.055] pt-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[8px] font-medium uppercase tracking-[0.18em] text-white/20">
+                  Pickup token
+                </span>
+
+                <span className="font-mono text-xs font-semibold text-[#c9a95b]/75">
+                  {order.tokenNumber || "—"}
+                </span>
+              </div>
+            </div>
+          </aside>
         </div>
+
+        {/* ===================================================
+            FOOTER
+        =================================================== */}
+
+        <footer className="mt-4 shrink-0 border-t border-white/[0.05] pt-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-white/15">
+              CampusOS · Smart Canteen
+            </p>
+
+            <p className="text-[8px] text-white/15">
+              GNIOT Campus
+            </p>
+          </div>
+        </footer>
       </main>
     </div>
   );
-}
+};
 
 export default OrderTracking;
