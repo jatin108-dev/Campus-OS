@@ -1,21 +1,29 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+
 import {
   ArrowRight,
   MapPinned,
   ShoppingBag,
   UtensilsCrossed,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
+import { Link, useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const loadUser = () => {
       try {
-        const storedUser = localStorage.getItem("campusOSUser");
-        setUser(storedUser ? JSON.parse(storedUser) : null);
+        const storedUser =
+          localStorage.getItem("campusOSUser");
+
+        setUser(
+          storedUser ? JSON.parse(storedUser) : null
+        );
       } catch {
         setUser(null);
       }
@@ -23,12 +31,54 @@ const Hero = () => {
 
     loadUser();
 
-    window.addEventListener("campusOSAuthChange", loadUser);
+    window.addEventListener(
+      "campusOSAuthChange",
+      loadUser
+    );
 
     return () => {
-      window.removeEventListener("campusOSAuthChange", loadUser);
+      window.removeEventListener(
+        "campusOSAuthChange",
+        loadUser
+      );
     };
   }, []);
+
+  // --------------------------------------------------
+  // SMART CANTEEN ROUTING
+  // --------------------------------------------------
+  const getSmartCanteenRoute = () => {
+    try {
+      const storedUser =
+        localStorage.getItem("campusOSUser");
+
+      // Not logged in
+      if (!storedUser) {
+        return "/login";
+      }
+
+      const loggedInUser = JSON.parse(storedUser);
+
+      // Vendor → Merchant Portal
+      if (loggedInUser?.role === "vendor") {
+        return "/merchant";
+      }
+
+      // Student → Student Canteen
+      return "/canteen";
+    } catch (error) {
+      console.error(
+        "Error reading CampusOS user:",
+        error
+      );
+
+      return "/login";
+    }
+  };
+
+  const handleSmartCanteenClick = () => {
+    navigate(getSmartCanteenRoute());
+  };
 
   return (
     <section className="relative overflow-hidden bg-[#09090f] text-white">
@@ -51,7 +101,6 @@ const Hero = () => {
 
       {/* =====================================================
           HERO CONTAINER
-          Compact version
       ===================================================== */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-155px)] max-w-7xl items-center px-6 pb-10 pt-32 sm:px-8 sm:pt-36 lg:px-10 lg:pb-10 lg:pt-36">
         <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:gap-10">
@@ -73,13 +122,14 @@ const Hero = () => {
               </span>
             </motion.div>
 
-            {/* =================================================
-                MAIN HEADING
-            ================================================= */}
+            {/* Main Heading */}
             <motion.h1
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.05 }}
+              transition={{
+                duration: 0.55,
+                delay: 0.05,
+              }}
               className="mt-6 text-[3rem] font-extrabold leading-[0.91] tracking-[-0.045em] sm:text-[3.6rem] lg:text-[3.95rem]"
             >
               <span className="text-white">
@@ -100,14 +150,11 @@ const Hero = () => {
 
               <br />
 
-              {/* FOR */}
               <span className="text-white/30">
                 for{" "}
               </span>
 
-              {/* =================================================
-                  GNIOT — GOLD CURSIVE
-              ================================================= */}
+              {/* GNIOT */}
               <span
                 className="relative inline-block font-normal italic tracking-[-0.015em] text-[#c7a85b]"
                 style={{
@@ -131,19 +178,26 @@ const Hero = () => {
             <motion.p
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.15,
+              }}
               className="mt-5 max-w-lg text-sm leading-6 text-slate-400 sm:text-[15px]"
             >
-              CampusOS connects students with essential campus
-              services through one intelligent platform. Order food,
-              skip queues, and navigate your campus with ease.
+              CampusOS connects students with essential
+              campus services through one intelligent
+              platform. Order food, skip queues, and
+              navigate your campus with ease.
             </motion.p>
 
             {/* CTA */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.22 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.22,
+              }}
               className="mt-6"
             >
               {!user ? (
@@ -177,7 +231,10 @@ const Hero = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.3,
+              }}
               className="mt-6 flex items-center gap-6"
             >
               <div>
@@ -222,7 +279,10 @@ const Hero = () => {
           <motion.div
             initial={{ opacity: 0, x: 25 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.65, delay: 0.12 }}
+            transition={{
+              duration: 0.65,
+              delay: 0.12,
+            }}
             className="relative mx-auto w-full max-w-xl lg:ml-auto"
           >
 
@@ -230,7 +290,10 @@ const Hero = () => {
             <motion.div
               initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.55 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.55,
+              }}
               className="absolute -left-2 top-8 z-20 hidden w-52 rounded-xl border border-emerald-400/15 bg-[#0d1714]/95 p-3.5 shadow-2xl backdrop-blur-xl sm:block lg:-left-12"
             >
               <div className="flex items-center gap-3">
@@ -284,9 +347,7 @@ const Hero = () => {
                 {/* Smart Canteen */}
                 <button
                   type="button"
-                  onClick={() => {
-                    window.location.href = "/canteen";
-                  }}
+                  onClick={handleSmartCanteenClick}
                   className="group rounded-xl border border-emerald-400/10 bg-[#09130f] p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-emerald-400/25"
                 >
                   <div className="flex items-start justify-between">
@@ -363,7 +424,10 @@ const Hero = () => {
             <motion.div
               initial={{ opacity: 0, x: 12 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.7,
+              }}
               className="absolute -bottom-4 right-0 z-20 hidden w-56 rounded-xl border border-amber-400/10 bg-[#14140f]/95 p-3.5 shadow-2xl backdrop-blur-xl sm:block lg:-right-10"
             >
               <div className="flex items-center gap-3">

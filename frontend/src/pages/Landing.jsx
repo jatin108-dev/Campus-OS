@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
+
 import {
   ArrowUpRight,
   MapPinned,
@@ -15,7 +17,7 @@ const features = [
     description:
       "Browse campus menus, place orders online, choose your pickup time, and skip the queue.",
     accent: "emerald",
-    route: "/canteen",
+    route: true,
   },
   {
     number: "02",
@@ -31,6 +33,39 @@ const features = [
 const Landing = () => {
   const navigate = useNavigate();
 
+  // Decide where Smart Canteen should take the user
+  const getSmartCanteenRoute = () => {
+    try {
+      const storedUser = localStorage.getItem("campusOSUser");
+
+      // User is not logged in
+      if (!storedUser) {
+        return "/login";
+      }
+
+      const user = JSON.parse(storedUser);
+
+      // Vendor → Merchant Portal
+      if (user?.role === "vendor") {
+        return "/merchant";
+      }
+
+      // Student → Student Canteen
+      return "/canteen";
+    } catch (error) {
+      console.error("Error reading CampusOS user:", error);
+
+      // If localStorage data is corrupted
+      return "/login";
+    }
+  };
+
+  const handleFeatureClick = (feature) => {
+    if (feature.title === "Smart Canteen") {
+      navigate(getSmartCanteenRoute());
+    }
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#090a0d] text-white">
       <Navbar />
@@ -44,7 +79,7 @@ const Landing = () => {
         id="features"
         className="relative border-t border-white/[0.06] bg-[#090a0d] px-6 py-16 sm:px-8 lg:px-10 lg:py-20"
       >
-        {/* subtle background grid */}
+        {/* Subtle background grid */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.035]"
           style={{
@@ -88,11 +123,7 @@ const Landing = () => {
               return (
                 <div
                   key={feature.number}
-                  onClick={() => {
-                    if (feature.route) {
-                      navigate(feature.route);
-                    }
-                  }}
+                  onClick={() => handleFeatureClick(feature)}
                   className={`group relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 sm:p-7 ${
                     feature.route
                       ? "cursor-pointer hover:-translate-y-1"
@@ -178,7 +209,7 @@ const Landing = () => {
             })}
           </div>
 
-          {/* Small platform statement */}
+          {/* Platform statement */}
           <div className="mt-5 flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.018] px-5 py-4">
             <p className="text-xs text-white/30">
               One platform. One campus.{" "}
@@ -201,7 +232,10 @@ const Landing = () => {
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-9 sm:px-8 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-lg font-bold text-white">
-              Campus<span className="text-emerald-400">OS</span>
+              Campus
+              <span className="text-emerald-400">
+                OS
+              </span>
             </h2>
 
             <p className="mt-1 text-xs text-white/30">
