@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const Order = require("../../models/Order");
@@ -17,14 +18,6 @@ const PICKUP_WINDOW_MINUTES = 40;
    TIME HELPERS
 ------------------------------------------ */
 
-/*
- * Round a date UP to the next 5-minute slot.
- *
- * Example:
- * 10:00:10 -> 10:05
- * 10:01    -> 10:05
- * 10:05    -> 10:05
- */
 const roundUpToFiveMinutes = (date) => {
   const result = new Date(date);
 
@@ -44,50 +37,33 @@ const roundUpToFiveMinutes = (date) => {
   return result;
 };
 
-/*
- * Get the minimum valid pickup time.
- *
- * Current time + 15 minutes,
- * rounded UP to a 5-minute slot.
- */
 const getMinimumPickupTime = () => {
   const now = new Date();
 
   const minimum = new Date(
     now.getTime() +
-      MIN_PICKUP_MINUTES *
-        60 *
-        1000
+      MIN_PICKUP_MINUTES * 60 * 1000
   );
 
-  return roundUpToFiveMinutes(
-    minimum
-  );
+  return roundUpToFiveMinutes(minimum);
 };
 
-/*
- * Generate a token prefix from canteen name.
- *
- * Bite Box   -> BB
- * CafeMonk   -> CM
- * ChaiGaram  -> CG
- * DosTea     -> DT
- */
+/* ------------------------------------------
+   CANTEEN TOKEN PREFIX
+------------------------------------------ */
+
 const getCanteenPrefix = (name) => {
-  const cleanName = String(name || "")
-    .trim();
+  const cleanName = String(name || "").trim();
 
   if (!cleanName) {
     return "CT";
   }
 
-  /*
-   * First try uppercase letters.
-   * Works nicely with:
-   * CafeMonk -> CM
-   * ChaiGaram -> CG
-   * DosTea -> DT
-   */
+  // Bite Box -> BB
+  // CafeMonk -> CM
+  // ChaiGaram -> CG
+  // DosTea -> DT
+
   const uppercaseLetters =
     cleanName.match(/[A-Z]/g);
 
@@ -101,10 +77,6 @@ const getCanteenPrefix = (name) => {
       .toUpperCase();
   }
 
-  /*
-   * For normal multi-word names:
-   * Bite Box -> BB
-   */
   const words = cleanName
     .split(/\s+/)
     .filter(Boolean);
@@ -112,9 +84,7 @@ const getCanteenPrefix = (name) => {
   if (words.length >= 2) {
     return words
       .slice(0, 2)
-      .map((word) =>
-        word.charAt(0)
-      )
+      .map((word) => word.charAt(0))
       .join("")
       .toUpperCase();
   }
@@ -124,53 +94,74 @@ const getCanteenPrefix = (name) => {
     .toUpperCase();
 };
 
-/*
- * Generate today's order token.
- *
- * Example:
- * BB-001
- * BB-002
- * CM-001
- */
-const generateTokenNumber = async (
-  canteen
-) => {
-  const prefix =
-    getCanteenPrefix(canteen.name);
+/* ------------------------------------------
+   GENERATE UNIQUE TOKEN
+------------------------------------------ */
 
-  const now = new Date();
+const generateTokenNumber = async (canteen) => {
+  const prefix = getCanteenPrefix(canteen.name);
 
-  const startOfDay = new Date(now);
-  startOfDay.setHours(
-    0,
-    0,
-    0,
-    0
-  );
+  /*
+   * IMPORTANT:
+   *
+   * tokenNumber has a UNIQUE index in MongoDB.
+   *
+   * We cannot simply count today's orders because
+   * BB-001 may already exist from an older order.
+   *
+   * Example:
+   *
+   * Existing:
+   * BB-001
+   *
+   * Next:
+   * BB-002
+   */
 
-  const endOfDay = new Date(now);
-  endOfDay.setHours(
-    23,
-    59,
-    59,
-    999
-  );
+  const existingOrders = await Order.find({
+    canteen: canteen._id,
+    tokenNumber: {
+      $exists: true,
+      $ne: null,
+    },
+  })
+    .select("tokenNumber")
+    .lean();
 
-  const todayOrderCount =
-    await Order.countDocuments({
-      canteen: canteen._id,
+  let highestSequence = 0;
 
-      createdAt: {
-        $gte: startOfDay,
-        $lte: endOfDay,
-      },
-    });
+  for (const existingOrder of existingOrders) {
+    const token = String(
+      existingOrder.tokenNumber || ""
+    );
 
-  const sequence =
-    todayOrderCount + 1;
+    const parts = token.split("-");
+
+    if (parts.length !== 2) {
+      continue;
+    }
+
+    const tokenPrefix = parts[0];
+
+    if (tokenPrefix !== prefix) {
+      continue;
+    }
+
+    const sequence = Number(parts[1]);
+
+    if (
+      Number.isInteger(sequence) &&
+      sequence > highestSequence
+    ) {
+      highestSequence = sequence;
+    }
+  }
+
+  const nextSequence =
+    highestSequence + 1;
 
   return `${prefix}-${String(
-    sequence
+    nextSequence
   ).padStart(3, "0")}`;
 };
 
@@ -178,10 +169,7 @@ const generateTokenNumber = async (
    CREATE ORDER
 ========================================== */
 
-const createOrder = async (
-  req,
-  res
-) => {
+const createOrder = async (req, res) => {
   try {
     const {
       canteen: canteenId,
@@ -204,9 +192,7 @@ const createOrder = async (
     }
 
     if (
-      !mongoose.Types.ObjectId.isValid(
-        canteenId
-      )
+      !mongoose.Types.ObjectId.isValid(canteenId)
     ) {
       return res.status(400).json({
         success: false,
@@ -220,26 +206,17 @@ const createOrder = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Your cart cannot be empty",
+        message: "Your cart cannot be empty",
       });
     }
 
     if (!pickupTime) {
       return res.status(400).json({
         success: false,
-        message:
-          "Pickup time is required",
+        message: "Pickup time is required",
       });
     }
 
-    /*
-     * Must be HH:mm.
-     *
-     * Example:
-     * 10:15
-     * 18:40
-     */
     if (
       !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(
         pickupTime
@@ -247,8 +224,7 @@ const createOrder = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid pickup time format",
+        message: "Invalid pickup time format",
       });
     }
 
@@ -267,8 +243,7 @@ const createOrder = async (
     if (paymentMethod !== "UPI") {
       return res.status(400).json({
         success: false,
-        message:
-          "Only UPI payment is supported",
+        message: "Only UPI payment is supported",
       });
     }
 
@@ -277,9 +252,7 @@ const createOrder = async (
     -------------------------------------- */
 
     const canteen =
-      await Canteen.findById(
-        canteenId
-      );
+      await Canteen.findById(canteenId);
 
     if (!canteen) {
       return res.status(404).json({
@@ -310,15 +283,10 @@ const createOrder = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid pickup timestamp",
+        message: "Invalid pickup timestamp",
       });
     }
 
-    /*
-     * Seconds and milliseconds should be zero
-     * because our slots are minute-based.
-     */
     if (
       selectedPickup.getSeconds() !== 0 ||
       selectedPickup.getMilliseconds() !== 0
@@ -330,9 +298,6 @@ const createOrder = async (
       });
     }
 
-    /*
-     * Must be a 5-minute slot.
-     */
     if (
       selectedPickup.getMinutes() %
         SLOT_INTERVAL !==
@@ -345,13 +310,6 @@ const createOrder = async (
       });
     }
 
-    /*
-     * Calculate valid range again on the
-     * SERVER.
-     *
-     * This prevents someone from bypassing
-     * the frontend.
-     */
     const minimumPickup =
       getMinimumPickupTime();
 
@@ -365,10 +323,8 @@ const createOrder = async (
       );
 
     if (
-      selectedPickup <
-        minimumPickup ||
-      selectedPickup >
-        maximumPickup
+      selectedPickup < minimumPickup ||
+      selectedPickup > maximumPickup
     ) {
       return res.status(400).json({
         success: false,
@@ -377,9 +333,10 @@ const createOrder = async (
       });
     }
 
-    /*
-     * Internal 40-minute pickup window.
-     */
+    /* --------------------------------------
+       INTERNAL PICKUP WINDOW
+    -------------------------------------- */
+
     const pickupWindowEnd =
       new Date(
         selectedPickup.getTime() +
@@ -392,17 +349,14 @@ const createOrder = async (
        VALIDATE CART ITEMS
     -------------------------------------- */
 
-    const menuItemIds =
-      items.map(
-        (item) => item.menuItem
-      );
+    const menuItemIds = items.map(
+      (item) => item.menuItem
+    );
 
     const invalidId =
       menuItemIds.find(
         (id) =>
-          !mongoose.Types.ObjectId.isValid(
-            id
-          )
+          !mongoose.Types.ObjectId.isValid(id)
       );
 
     if (invalidId) {
@@ -418,7 +372,6 @@ const createOrder = async (
         _id: {
           $in: menuItemIds,
         },
-
         canteen: canteenId,
       });
 
@@ -445,7 +398,8 @@ const createOrder = async (
     if (unavailableItem) {
       return res.status(400).json({
         success: false,
-        message: `${unavailableItem.name} is currently unavailable`,
+        message:
+          `${unavailableItem.name} is currently unavailable`,
       });
     }
 
@@ -463,14 +417,10 @@ const createOrder = async (
           );
 
         const quantity =
-          Number(
-            cartItem.quantity
-          );
+          Number(cartItem.quantity);
 
         if (
-          !Number.isInteger(
-            quantity
-          ) ||
+          !Number.isInteger(quantity) ||
           quantity < 1
         ) {
           throw new Error(
@@ -479,21 +429,14 @@ const createOrder = async (
         }
 
         return {
-          menuItem:
-            menuItem._id,
+          menuItem: menuItem._id,
+          name: menuItem.name,
 
-          name:
-            menuItem.name,
-
+          // Never trust frontend quantity/price
           quantity,
 
-          /*
-           * IMPORTANT:
-           * Never trust the price sent
-           * by frontend.
-           */
-          price:
-            menuItem.price,
+          // Always use DB price
+          price: menuItem.price,
         };
       });
 
@@ -505,9 +448,7 @@ const createOrder = async (
       orderItems.reduce(
         (total, item) =>
           total +
-          item.price *
-            item.quantity,
-
+          item.price * item.quantity,
         0
       );
 
@@ -521,65 +462,96 @@ const createOrder = async (
         : "";
 
     /* --------------------------------------
-       TOKEN
-    -------------------------------------- */
-
-    const tokenNumber =
-      await generateTokenNumber(
-        canteen
-      );
-
-    /* --------------------------------------
        CREATE ORDER
     -------------------------------------- */
 
-    const order =
-      await Order.create({
-        student:
-          req.user._id,
+    let order = null;
+    let lastCreateError = null;
 
-        canteen:
-          canteen._id,
+    /*
+     * Retry a few times in case two users
+     * create an order at exactly the same time
+     * and MongoDB rejects a duplicate token.
+     */
 
-        items:
-          orderItems,
+    for (
+      let attempt = 0;
+      attempt < 3;
+      attempt += 1
+    ) {
+      try {
+        const tokenNumber =
+          await generateTokenNumber(
+            canteen
+          );
 
-        totalAmount,
+        order =
+          await Order.create({
+            student: req.user._id,
 
-        pickupTime,
+            canteen: canteen._id,
 
-        pickupAt:
-          selectedPickup,
+            items: orderItems,
 
-        pickupWindowEnd,
+            totalAmount,
 
-        note:
-          cleanNote,
+            pickupTime,
 
-        pickupMethod:
-          "COUNTER",
+            pickupAt: selectedPickup,
 
-        paymentMethod:
-          "UPI",
+            pickupWindowEnd,
+
+            note: cleanNote,
+
+            pickupMethod: "COUNTER",
+
+            paymentMethod: "UPI",
+
+            /*
+             * Demo payment.
+             * Replace with actual gateway
+             * verification later.
+             */
+            paymentStatus: "PAID",
+
+            orderStatus: "PLACED",
+
+            tokenNumber,
+          });
+
+        // Successfully created
+        break;
+      } catch (error) {
+        lastCreateError = error;
 
         /*
-         * Current project uses demo payment.
-         * Replace with real gateway verification
-         * when Razorpay/UPI integration is added.
+         * If duplicate token occurs,
+         * generate another token.
          */
-        paymentStatus:
-          "PAID",
+        if (
+          error?.code !== 11000 ||
+          !error?.keyPattern?.tokenNumber
+        ) {
+          throw error;
+        }
+      }
+    }
 
-        orderStatus:
-          "PLACED",
+    if (!order) {
+      throw (
+        lastCreateError ||
+        new Error(
+          "Unable to generate a unique order token"
+        )
+      );
+    }
 
-        tokenNumber,
-      });
+    /* --------------------------------------
+       POPULATE ORDER
+    -------------------------------------- */
 
     const populatedOrder =
-      await Order.findById(
-        order._id
-      )
+      await Order.findById(order._id)
         .populate(
           "canteen",
           "name location isOpen preparationTime"
@@ -591,12 +563,9 @@ const createOrder = async (
 
     return res.status(201).json({
       success: true,
-
       message:
         "Order placed successfully",
-
-      order:
-        populatedOrder,
+      order: populatedOrder,
     });
   } catch (error) {
     console.error(
@@ -617,15 +586,11 @@ const createOrder = async (
    GET MY ORDERS
 ========================================== */
 
-const getMyOrders = async (
-  req,
-  res
-) => {
+const getMyOrders = async (req, res) => {
   try {
     const orders =
       await Order.find({
-        student:
-          req.user._id,
+        student: req.user._id,
       })
         .populate(
           "canteen",
@@ -663,19 +628,14 @@ const getMerchantOrders = async (
   res
 ) => {
   try {
-    /*
-     * Find canteens owned by this vendor.
-     */
     const canteens =
       await Canteen.find({
-        owner:
-          req.user._id,
+        owner: req.user._id,
       }).select("_id");
 
     const canteenIds =
       canteens.map(
-        (canteen) =>
-          canteen._id
+        (canteen) => canteen._id
       );
 
     if (!canteenIds.length) {
@@ -732,18 +692,14 @@ const getOrderById = async (
   res
 ) => {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
     if (
-      !mongoose.Types.ObjectId.isValid(
-        id
-      )
+      !mongoose.Types.ObjectId.isValid(id)
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid order ID",
+        message: "Invalid order ID",
       });
     }
 
@@ -761,8 +717,7 @@ const getOrderById = async (
     if (!order) {
       return res.status(404).json({
         success: false,
-        message:
-          "Order not found",
+        message: "Order not found",
       });
     }
 
@@ -779,8 +734,7 @@ const getOrderById = async (
       req.user._id.toString();
 
     const isAdmin =
-      req.user.role ===
-      "admin";
+      req.user.role === "admin";
 
     if (
       !isStudent &&
@@ -821,12 +775,9 @@ const updateOrderStatus = async (
   res
 ) => {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
-    const {
-      status,
-    } = req.body;
+    const { status } = req.body;
 
     const allowedStatuses = [
       "PLACED",
@@ -838,9 +789,7 @@ const updateOrderStatus = async (
     ];
 
     if (
-      !allowedStatuses.includes(
-        status
-      )
+      !allowedStatuses.includes(status)
     ) {
       return res.status(400).json({
         success: false,
@@ -850,9 +799,7 @@ const updateOrderStatus = async (
     }
 
     if (
-      !mongoose.Types.ObjectId.isValid(
-        id
-      )
+      !mongoose.Types.ObjectId.isValid(id)
     ) {
       return res.status(400).json({
         success: false,
@@ -871,8 +818,7 @@ const updateOrderStatus = async (
     if (!order) {
       return res.status(404).json({
         success: false,
-        message:
-          "Order not found",
+        message: "Order not found",
       });
     }
 
@@ -885,8 +831,7 @@ const updateOrderStatus = async (
       req.user._id.toString();
 
     const isAdmin =
-      req.user.role ===
-      "admin";
+      req.user.role === "admin";
 
     if (
       !isOwner &&
@@ -932,20 +877,19 @@ const updateOrderStatus = async (
       order.orderStatus;
 
     if (
-      currentStatus !==
-        status &&
+      currentStatus !== status &&
       !allowedTransitions[
         currentStatus
       ].includes(status)
     ) {
       return res.status(400).json({
         success: false,
-        message: `Cannot change order status from ${currentStatus} to ${status}`,
+        message:
+          `Cannot change order status from ${currentStatus} to ${status}`,
       });
     }
 
-    order.orderStatus =
-      status;
+    order.orderStatus = status;
 
     await order.save();
 
@@ -964,12 +908,9 @@ const updateOrderStatus = async (
 
     return res.json({
       success: true,
-
       message:
         `Order status updated to ${status}`,
-
-      order:
-        updatedOrder,
+      order: updatedOrder,
     });
   } catch (error) {
     console.error(

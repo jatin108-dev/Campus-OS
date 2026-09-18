@@ -2,12 +2,32 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 
+// Cookie configuration
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  };
+};
+
 // Register User
 const registerUser = async (req, res) => {
   try {
-    const { fullName, email, password, role, enrollmentNumber, vendorId, } = req.body;
+    const {
+      fullName,
+      email,
+      password,
+      role,
+      enrollmentNumber,
+      vendorId,
+    } = req.body;
 
-        // if all fields are provided
+    // Check required fields
     if (!fullName || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -15,7 +35,7 @@ const registerUser = async (req, res) => {
       });
     }
 
-        // Check if email already exists
+    // Check if email already exists
     const userExists = await User.findOne({ email });
 
     if (userExists) {
@@ -25,11 +45,11 @@ const registerUser = async (req, res) => {
       });
     }
 
-        // Hash Password
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create User
+    // Create user
     const user = await User.create({
       fullName,
       email,
@@ -39,18 +59,13 @@ const registerUser = async (req, res) => {
       vendorId,
     });
 
-        // Generate JWT
+    // Generate JWT
     const token = generateToken(user._id);
 
-        // Store token in cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, 
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // Store JWT in cookie
+    res.cookie("token", token, getCookieOptions());
 
-        res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Registration Successful",
       user: {
@@ -61,17 +76,16 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Register error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server Error",
     });
   }
 };
 
-// Login User 
-
+// Login User
 const loginUser = async (req, res) => {
   try {
     const { loginId, password, role } = req.body;
@@ -83,11 +97,17 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Find user
+    // Find user based on role
     const user = await User.findOne(
       role === "student"
-        ? { enrollmentNumber: loginId, role: "student" }
-        : { vendorId: loginId, role: "vendor" }
+        ? {
+            enrollmentNumber: loginId,
+            role: "student",
+          }
+        : {
+            vendorId: loginId,
+            role: "vendor",
+          }
     );
 
     if (!user) {
@@ -96,13 +116,14 @@ const loginUser = async (req, res) => {
         message: "Invalid ID or password",
       });
     }
+
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: "Invalid ID or password",
       });
     }
 
@@ -110,14 +131,9 @@ const loginUser = async (req, res) => {
     const token = generateToken(user._id);
 
     // Store JWT in cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, getCookieOptions());
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Login Successful",
       user: {
@@ -127,11 +143,10 @@ const loginUser = async (req, res) => {
         role: user.role,
       },
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server Error",
     });
@@ -140,13 +155,16 @@ const loginUser = async (req, res) => {
 
 // Logout User
 const logoutUser = (req, res) => {
+  const options = getCookieOptions();
+
   res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    httpOnly: options.httpOnly,
+    secure: options.secure,
+    sameSite: options.sameSite,
+    path: options.path,
   });
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Logout Successful",
   });

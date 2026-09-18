@@ -96,6 +96,17 @@ const timeToDate = (time) => {
   return date;
 };
 
+// Get the exact Date object for a selected slot.
+// This is important when the slot crosses midnight, because
+// timeToDate() alone would otherwise treat 12:xx AM as today.
+const getSelectedPickupDate = (time, slots) => {
+  const selectedSlot = slots.find(
+    (slot) => slot.value === time
+  );
+
+  return selectedSlot?.date || null;
+};
+
 const addMinutes = (date, minutes) => {
   return new Date(
     date.getTime() +
@@ -227,7 +238,7 @@ function Checkout() {
     if (!pickupTime) return;
 
     const selectedDate =
-      timeToDate(pickupTime);
+      getSelectedPickupDate(pickupTime, pickupSlots);
 
     const minDate = getRoundedMinimumDate();
     const maxDate = addMinutes(
@@ -244,7 +255,7 @@ function Checkout() {
         formatTimeForInput(minDate)
       );
     }
-  }, [currentTime, pickupTime]);
+  }, [currentTime, pickupTime, pickupSlots]);
 
   /* ------------------------------------------
      SELECTED PICKUP DATE
@@ -253,8 +264,11 @@ function Checkout() {
   const selectedPickupDate = useMemo(() => {
     if (!pickupTime) return null;
 
-    return timeToDate(pickupTime);
-  }, [pickupTime]);
+    return getSelectedPickupDate(
+      pickupTime,
+      pickupSlots
+    );
+  }, [pickupTime, pickupSlots]);
 
   /* ------------------------------------------
      PICKUP WINDOW
@@ -340,7 +354,7 @@ function Checkout() {
      * Final frontend validation.
      */
     const selectedDate =
-      timeToDate(pickupTime);
+      getSelectedPickupDate(pickupTime, pickupSlots);
 
     const minimum =
       getRoundedMinimumDate();
@@ -352,6 +366,7 @@ function Checkout() {
     );
 
     if (
+      !selectedDate ||
       selectedDate < minimum ||
       selectedDate > maximum
     ) {
